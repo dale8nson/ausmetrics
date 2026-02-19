@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="260" viewBox="0 0 360 104">
+  <defs>
+    <polygon id="star5" points="
+      0,-1
+      0.2245,-0.3090
+      0.9511,-0.3090
+      0.3633,0.1180
+      0.5878,0.8090
+      0,0.3820
+      -0.5878,0.8090
+      -0.3633,0.1180
+      -0.9511,-0.3090
+      -0.2245,-0.3090
+    "/>
+  </defs>
+
+  <!-- Icon -->
+  <g transform="translate(52,52)">
+    <circle cx="0" cy="0" r="46" fill="#0B1F33"/>
+    <g fill="#C6A75E">
+      <rect x="-16" y="10" width="8" height="18" rx="1"/>
+      <rect x="-4"  y="3"  width="8" height="25" rx="1"/>
+      <rect x="8"   y="-4" width="8" height="32" rx="1"/>
+    </g>
+    <g fill="#C6A75E">
+      <use href="#star5" transform="translate(5,8)  scale(7.5) rotate(12)"/>
+      <use href="#star5" transform="translate(-5,-24) scale(6.6) rotate(-6)"/>
+      <use href="#star5" transform="translate(-18,-10) scale(5.8) rotate(10)"/>
+      <use href="#star5" transform="translate(17,-14) scale(5.9) rotate(-12)"/>
+      <use href="#star5" transform="translate(13,-26) scale(3.8) rotate(8)"/>
+    </g>
+  </g>
+
+  <!-- Wordmark -->
+  <g transform="translate(118,34)">
+    <!-- Use a neutral sans; swap to Inter/IBM Plex Sans in Inkscape if installed -->
+    <text x="0" y="34"
+      fill="#0B1F33"
+      font-family="Inter, IBM Plex Sans, Source Sans 3, Arial, sans-serif"
+      font-size="34"
+      font-weight="600"
+      letter-spacing="1.2">AUSMETRICS</text>
+    <!-- Optional small descriptor (comment out if you want cleaner) -->
+    <text x="0" y="60"
+      fill="#6E7B85"
+      font-family="Inter, IBM Plex Sans, Source Sans 3, Arial, sans-serif"
+      font-size="12"
+      font-weight="500"
+      letter-spacing="0.6">AUSTRALIAN PUBLIC DATA • ANALYSIS</text>
+  </g>
+</svg>
