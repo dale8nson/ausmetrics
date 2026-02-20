@@ -1,7 +1,10 @@
 use crate::error::GQLError;
+use actix_web::Either;
 use async_graphql::{
     EmptyMutation, EmptySubscription, Json, Name, Number, OutputType, Value,
-    dynamic::{Field, FieldFuture, FieldValue, Object, Schema, TypeRef, indexmap::IndexMap},
+    dynamic::{
+        Field, FieldFuture, FieldValue, Interface, Object, Schema, TypeRef, indexmap::IndexMap,
+    },
     to_value,
 };
 use async_graphql_value::ConstValue;
@@ -10,7 +13,7 @@ use serde_json::from_value;
 use std::{
     borrow::Cow,
     cell::{Cell, RefCell},
-    collections::HashMap,
+    collections::{HashMap, hash_map::Keys},
     ops::{ControlFlow, Deref},
     path::PathBuf,
     rc::Rc,
@@ -56,8 +59,8 @@ fn getln() {
 }
 
 pub fn yaml_to_value(yaml: Yaml) -> Value {
-    println!("{yaml:#?}");
-    getln();
+    // println!("{yaml:#?}");
+    // getln();
     match yaml {
         Yaml::String(string) => to_value(string).unwrap(),
         Yaml::Integer(int) => Value::Number(Number::from_f64(int as f64).unwrap()),
@@ -117,6 +120,17 @@ pub fn parse_yaml<'a>(yaml: Yaml) -> FieldValue<'a> {
     // std::io::stdin().read_line(&mut String::new()).unwrap();
 }
 
+pub fn to_typeref(k: String, v: Yaml) -> TypeRef {
+    match v {
+        Yaml::Integer(_) => TypeRef::named(TypeRef::INT),
+        Yaml::Real(_) => TypeRef::named(TypeRef::FLOAT),
+        Yaml::String(_) => TypeRef::named(TypeRef::STRING),
+        Yaml::Boolean(_) => TypeRef::named(TypeRef::BOOLEAN),
+        Yaml::Array(arr) => TypeRef::named(to_typeref(k, arr[0].clone()).type_name()),
+        _ => TypeRef::named(k),
+    }
+}
+
 pub fn to_gql(yaml_doc: Vec<Yaml>) -> Result<Schema, GQLError> {
     // In async-graphql's *dynamic* API, `Schema::build(...)` expects the **root type names**
     // (e.g. "Query"), and you then `.register(...)` the actual `Object`s/`Enum`s/etc.
@@ -128,13 +142,73 @@ pub fn to_gql(yaml_doc: Vec<Yaml>) -> Result<Schema, GQLError> {
     // Keep your YAML->Value conversion, but expose it as a field so we can confirm the
     // parser works while we work on real type/field generation.
     // This produces a usable schema instead of attempting to build from a Value string.
-    let yaml_value = yaml_doc
-        .get(0)
-        .cloned()
-        .map(|doc| parse_yaml(doc))
-        .unwrap_or(FieldValue::NULL);
-    
-    let query = Field::new("Query", )
+    let yaml = yaml_doc.get(0).unwrap().clone();
+    let hash = yaml.into_hash().unwrap();
+    let paths = hash
+        .get_key_value(&Yaml::from_str("paths"))
+        .unwrap()
+        .1
+        .clone()
+        .into_hash()
+        .unwrap()
+        .keys()
+        .map(|k| k.clone().into_string().unwrap())
+        .collect::<Vec<String>>();
+
+    println!("{paths:#?}");
+
+    let components = hash
+        .get_key_value(&Yaml::from_str("components"))
+        .unwrap()
+        .1
+        .clone()
+        .into_hash()
+        .unwrap();
+
+    let params = components
+        .get_key_value(&Yaml::from_str("parameters"))
+        .unwrap()
+        .1
+        .clone()
+        .into_hash()
+        .unwrap();
+
+    let parameter_names = params
+        .clone()
+        .keys()
+        .map(|y| {
+            format!(
+                "{}",
+                y.clone().into_string().unwrap(),
+                // v.clone().into_string().unwrap()
+            )
+        })
+        .collect::<Vec<String>>();
+
+    println!("{parameter_names:#?}");
+
+    // let mut parameters = Object::new("parameters");
+
+    let (object, types) = parse_hash(&params, parameter_names, Object::new("parameters"));
+    // println!("parameters.len(): {}", parameters.len());
+    let query = object;
+    println!("{query:#?}");
+    let type_name = query.type_name();
+
+    let mut schema_builder = Schema::build(type_name, None, None);
+    // let sb = schema_builder.get_mut();
+    schema_builder = [query]
+        .into_iter()
+        .chain(types)
+        .fold(schema_builder, |acc, ty| acc.register(ty));
+    let schema = schema_builder.finish().unwrap();
+    // let yaml_value = yaml_doc
+    //     .get(0)
+    //     .cloned()
+    //     .map(|doc| parse_yaml(doc))
+    //     .unwrap_or(FieldValue::NULL);
+
+    // let query = Field::new("Query", )
     // A simple field that returns the parsed YAML as a String.
     // (If you want a real JSON scalar later, we can register a `Scalar` named "JSON".)
     //
@@ -154,5 +228,64 @@ pub fn to_gql(yaml_doc: Vec<Yaml>) -> Result<Schema, GQLError> {
     //         GQLError::Io(std::io::Error::other(e.0))
     //     })?;
 
-    Ok(Schema::build("Query {}", None, None).finish()?)
+    println!("{}", schema.sdl());
+
+    Ok(schema)
+}
+
+fn into_field(k: Yaml, v: Yaml) -> Field {
+    let mut name = k.clone().into_string().unwrap();
+    name = name.replace("-", "_");
+    // if name == "schema" {
+    //     name = String::from("schema_");
+    // }
+    let type_ref = to_typeref(name.clone(), v.clone());
+    Field::new(name, type_ref, move |_| {
+        FieldFuture::from_value(Some(yaml_to_value(v.clone())))
+    })
+}
+
+fn parse_hash<'a>(hash: &'a Hash, keys: Vec<String>, mut object: Object) -> (Object, Vec<Object>) {
+    println!("Object: {}", object.type_name());
+    let mut types = Vec::<Object>::new();
+    for mut name in keys {
+        name = name.replace("_", "-");
+        // if name == "schema_" {
+        //     name = String::from("schema");
+        // }
+        let (k, v) = hash.get_key_value(&Yaml::from_str(&name)).unwrap();
+        let k = k.clone();
+
+        let mut type_name = k.clone().into_string().unwrap();
+        type_name = type_name.replace("-", "_");
+        // if type_name == "schema" {
+        //     type_name = String::from("schema_")
+        // }
+
+        let v = v.clone();
+        if let Yaml::Hash(hash) = v.clone() {
+            let keys = hash
+                .keys()
+                .cloned()
+                .map(|key| {
+                    let mut key = key.into_string().unwrap();
+                    key = key.replace("-", "_");
+                    // if key.as_str() == "schema" {
+                    //     String::from("schema_")
+                    // } else {
+                    key
+                    // }
+                })
+                .collect::<Vec<String>>()
+                .clone();
+
+            let (root, tys) = parse_hash(&hash, keys, Object::new(type_name));
+            types.extend([root].into_iter().chain(tys));
+        }
+
+        let field = into_field(k.clone(), v.clone());
+        object = object.field(field);
+    }
+
+    (object, types)
 }

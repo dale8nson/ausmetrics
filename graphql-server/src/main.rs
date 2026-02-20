@@ -15,12 +15,12 @@ use crate::schema::{parse_yaml_doc, to_gql};
 //     web::Json(schema.execute(req.into_inner()).await.into())
 // }
 
-#[get("/graphiql")]
 async fn graphiql_service() -> HttpResponse {
     HttpResponse::build(StatusCode::OK).body(
         GraphiQLSource::build()
-            .endpoint("/grahpiql")
-            .title("AusMetrics graphql schema")
+            .version("2")
+            .endpoint("/")
+            .title("AusMetrics GraphQL Schema")
             .finish(),
     )
 }
@@ -32,10 +32,10 @@ async fn main() -> Result<(), GQLError> {
     let addr = || std::env::var("GRAPHQL_ADDR").unwrap();
     let port = u16::from_str_radix(std::env::var("PORT")?.as_str(), 10)?;
 
-    let yaml = parse_yaml_doc(PathBuf::from_str("specifications/sdmx-rest.yaml").unwrap())?;
-    let schema = to_gql(yaml)?;
-
     HttpServer::new(move || {
+        let yaml =
+            parse_yaml_doc(PathBuf::from_str("specifications/sdmx-rest.yaml").unwrap()).unwrap();
+        let schema: Schema = to_gql(yaml).unwrap();
         App::new()
             .app_data(web::Data::new(schema.clone()))
             .service(
@@ -43,7 +43,7 @@ async fn main() -> Result<(), GQLError> {
                     .guard(guard::Post())
                     .to(GraphQL::new(schema.clone())),
             )
-            .service(graphiql_service)
+            .service(web::resource("/").guard(guard::Get()).to(graphiql_service))
     })
     .on_connect(move |_conn, _ext| {
         println!("now listening at http://{} on port {}", addr(), port);
