@@ -1,14 +1,26 @@
 pub(crate) mod error;
+pub(crate) mod graph;
+pub(crate) mod param;
 mod schema;
-use std::{path::PathBuf, str::FromStr};
+use std::{path::PathBuf, sync::Arc};
 
 use actix_web::{App, HttpResponse, HttpServer, get, guard, http::StatusCode, post, web};
-use async_graphql::{dynamic::Schema, http::GraphiQLSource};
+use async_graphql::{
+    EmptyMutation, EmptySubscription, Name, ObjectType, OutputType, Schema, Value,
+    dynamic::{Field, TypeRef, indexmap::IndexMap},
+    http::GraphiQLSource,
+    parser::parse_schema,
+};
 use async_graphql_actix_web::{GraphQL, GraphQLRequest, GraphQLResponse};
 use dotenv::from_filename;
+use env_logger::{Builder, Env};
 use error::GQLError;
+use futures::executor::block_on;
+use log::LevelFilter;
+use reqwest::Response;
+use serde::{Deserializer, de::Visitor};
 
-use crate::schema::{parse_yaml_doc, to_gql};
+use crate::schema::get_schema;
 
 // #[post("/")]
 // async fn gql_req(req: GraphQLRequest, schema: web::Data<Schema>) -> web::Json<GraphQLResponse> {
@@ -27,21 +39,34 @@ async fn graphiql_service() -> HttpResponse {
 
 #[actix_web::main]
 async fn main() -> Result<(), GQLError> {
+    Builder::new()
+        .format_source_path(true)
+        .format_module_path(false)
+        .format_target(false)
+        .format_timestamp(None)
+        .filter_module("graphql_server::schema", LevelFilter::Debug)
+        // .filter_level(LevelFilter::Debug)
+        .init();
     from_filename(".env.local").ok();
 
     let addr = || std::env::var("GRAPHQL_ADDR").unwrap();
     let port = u16::from_str_radix(std::env::var("PORT")?.as_str(), 10)?;
 
+    let client = Arc::new(reqwest::Client::new());
+
+    let schema = get_schema().await;
+
     HttpServer::new(move || {
-        let yaml =
-            parse_yaml_doc(PathBuf::from_str("specifications/sdmx-rest.yaml").unwrap()).unwrap();
-        let schema: Schema = to_gql(yaml).unwrap();
+        let schema_clone = schema.clone();
+        let cors = actix_cors::Cors::default().allow_any_origin();
         App::new()
-            .app_data(web::Data::new(schema.clone()))
+            .app_data(web::Data::new(schema_clone.clone()))
+            .app_data(web::Data::new(client.clone()))
+            .wrap(cors)
             .service(
                 web::resource("/")
                     .guard(guard::Post())
-                    .to(GraphQL::new(schema.clone())),
+                    .to(GraphQL::new(schema_clone)),
             )
             .service(web::resource("/").guard(guard::Get()).to(graphiql_service))
     })

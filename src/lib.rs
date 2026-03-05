@@ -1,4 +1,7 @@
 pub mod app;
+pub mod components;
+
+pub use components::line_chart;
 
 #[cfg(feature = "hydrate")]
 #[wasm_bindgen::prelude::wasm_bindgen]

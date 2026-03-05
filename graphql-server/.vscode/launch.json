@@ -1,0 +1,101 @@
+{
+  // Use IntelliSense to learn about possible attributes.
+  // Hover to view descriptions of existing attributes.
+  // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "lldb",
+      "request": "launch",
+      "name": "Debug executable 'graphql-server'",
+      "cargo": {
+        "args": [
+          "build",
+          "--bin=graphql-server",
+          "--package=graphql-server"
+        ],
+        "filter": {
+          "name": "graphql-server",
+          "kind": "bin"
+        }
+      },
+      "args": [],
+      "cwd": "${workspaceFolder}"
+    },
+    {
+      "type": "lldb",
+      "request": "launch",
+      "name": "Debug unit tests in executable 'graphql-server'",
+      "cargo": {
+        "args": [
+          "test",
+          "--no-run",
+          "--bin=graphql-server",
+          "--package=graphql-server"
+        ],
+        "filter": {
+          "name": "graphql-server",
+          "kind": "bin"
+        }
+      },
+      "args": [],
+      "cwd": "${workspaceFolder}"
+    },
+    {
+      "type": "lldb",
+      "request": "launch",
+      "name": "Debug unit tests in library 'ausmetrics'",
+      "cargo": {
+        "args": [
+          "test",
+          "--no-run",
+          "--lib",
+          "--package=ausmetrics"
+        ],
+        "filter": {
+          "name": "ausmetrics",
+          "kind": "lib"
+        }
+      },
+      "args": [],
+      "cwd": "${workspaceFolder}"
+    },
+    {
+      "type": "lldb",
+      "request": "launch",
+      "name": "Debug executable 'ausmetrics'",
+      "cargo": {
+        "args": [
+          "build",
+          "--bin=ausmetrics",
+          "--package=ausmetrics"
+        ],
+        "filter": {
+          "name": "ausmetrics",
+          "kind": "bin"
+        }
+      },
+      "args": [],
+      "cwd": "${workspaceFolder}"
+    },
+    {
+      "type": "lldb",
+      "request": "launch",
+      "name": "Debug unit tests in executable 'ausmetrics'",
+      "cargo": {
+        "args": [
+          "test",
+          "--no-run",
+          "--bin=ausmetrics",
+          "--package=ausmetrics"
+        ],
+        "filter": {
+          "name": "ausmetrics",
+          "kind": "bin"
+        }
+      },
+      "args": [],
+      "cwd": "${workspaceFolder}"
+    }
+  ]
+}

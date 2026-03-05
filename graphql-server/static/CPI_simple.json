@@ -1,0 +1,178 @@
+{
+  "meta": {
+    "schema": "https://raw.githubusercontent.com/sdmx-twg/sdmx-json/master/data-message/tools/schemas/2.0.0/sdmx-json-data-schema.json",
+    "id": "IREF001680",
+    "prepared": "2026-03-02T05:43:07Z",
+    "test": true,
+    "contentLanguages": ["en"],
+    "sender": { "id": "Stable_-_DotStat_v8", "name": "unknown", "names": { "en": "unknown" } }
+  },
+  "data": {
+    "dataSets": [
+      {
+        "structure": 0,
+        "action": "Information",
+        "links": [{ "urn": "urn:sdmx:org.sdmx.infomodel.datastructure.DataStructure=ABS:CPI(2.0.0)", "rel": "DataStructure" }],
+        "annotations": [0, 1, 2, 3, 4, 5],
+        "attributes": [0],
+        "series": {
+          "0:0:0:0:0": {
+            "attributes": [0],
+            "annotations": [],
+            "observations": { "0": [3.8], "1": [3.6], "2": [3.2], "3": [3], "4": [1.9], "5": [2.1], "6": [2.4], "7": [3.8], "8": [3.8], "9": [3.4] }
+          }
+        }
+      }
+    ],
+    "structures": [
+      {
+        "name": "Consumer Price Index (CPI)",
+        "names": { "en": "Consumer Price Index (CPI)" },
+        "description": "The Consumer Price Index (CPI) measures changes in the price of a 'basket' of goods and services which account for a high proportion of expenditure by the CPI population group (i.e. metropolitan households). Unit of measure: Index. Geographic coverage: Australia/State. Catalogue number: 6401.0",
+        "descriptions": {
+          "en": "The Consumer Price Index (CPI) measures changes in the price of a 'basket' of goods and services which account for a high proportion of expenditure by the CPI population group (i.e. metropolitan households). Unit of measure: Index. Geographic coverage: Australia/State. Catalogue number: 6401.0"
+        },
+        "dimensions": {
+          "dataSet": [],
+          "series": [
+            {
+              "id": "MEASURE",
+              "name": "Measure",
+              "names": { "en": "Measure" },
+              "keyPosition": 0,
+              "roles": ["MEASURE"],
+              "values": [{ "id": "3", "order": 2, "name": "Percentage change from previous year", "names": { "en": "Percentage change from previous year" }, "annotations": [6] }]
+            },
+            {
+              "id": "INDEX",
+              "name": "Index",
+              "names": { "en": "Index" },
+              "keyPosition": 1,
+              "roles": ["INDEX"],
+              "values": [{ "id": "10001", "order": 0, "name": "All groups CPI", "names": { "en": "All groups CPI" }, "annotations": [7] }]
+            },
+            {
+              "id": "TSEST",
+              "name": "Adjustment Type",
+              "names": { "en": "Adjustment Type" },
+              "keyPosition": 2,
+              "roles": ["TSEST"],
+              "values": [{ "id": "10", "order": 0, "name": "Original", "names": { "en": "Original" }, "annotations": [8, 9] }],
+              "annotations": [10]
+            },
+            {
+              "id": "REGION",
+              "name": "Region",
+              "names": { "en": "Region" },
+              "keyPosition": 3,
+              "roles": ["REGION"],
+              "values": [{ "id": "50", "order": 0, "name": "Australia", "names": { "en": "Australia" }, "annotations": [7] }]
+            },
+            {
+              "id": "FREQ",
+              "name": "Frequency",
+              "names": { "en": "Frequency" },
+              "keyPosition": 4,
+              "roles": ["FREQ"],
+              "values": [{ "id": "M", "order": 7, "name": "Monthly", "names": { "en": "Monthly" } }]
+            }
+          ],
+          "observation": [
+            {
+              "id": "TIME_PERIOD",
+              "name": "Time Period",
+              "names": { "en": "Time Period" },
+              "keyPosition": 5,
+              "roles": ["TIME_PERIOD"],
+              "values": [
+                { "start": "2025-10-01T00:00:00", "end": "2025-10-31T00:00:00", "id": "2025-10", "name": "2025-10", "names": { "en": "2025-10" } },
+                { "start": "2025-09-01T00:00:00", "end": "2025-09-30T00:00:00", "id": "2025-09", "name": "2025-09", "names": { "en": "2025-09" } },
+                { "start": "2025-08-01T00:00:00", "end": "2025-08-31T00:00:00", "id": "2025-08", "name": "2025-08", "names": { "en": "2025-08" } },
+                { "start": "2025-07-01T00:00:00", "end": "2025-07-31T00:00:00", "id": "2025-07", "name": "2025-07", "names": { "en": "2025-07" } },
+                { "start": "2025-06-01T00:00:00", "end": "2025-06-30T00:00:00", "id": "2025-06", "name": "2025-06", "names": { "en": "2025-06" } },
+                { "start": "2025-05-01T00:00:00", "end": "2025-05-31T00:00:00", "id": "2025-05", "name": "2025-05", "names": { "en": "2025-05" } },
+                { "start": "2025-04-01T00:00:00", "end": "2025-04-30T00:00:00", "id": "2025-04", "name": "2025-04", "names": { "en": "2025-04" } },
+                { "start": "2026-01-01T00:00:00", "end": "2026-01-31T00:00:00", "id": "2026-01", "name": "2026-01", "names": { "en": "2026-01" } },
+                { "start": "2025-12-01T00:00:00", "end": "2025-12-31T00:00:00", "id": "2025-12", "name": "2025-12", "names": { "en": "2025-12" } },
+                { "start": "2025-11-01T00:00:00", "end": "2025-11-30T00:00:00", "id": "2025-11", "name": "2025-11", "names": { "en": "2025-11" } }
+              ]
+            }
+          ]
+        },
+        "attributes": {
+          "dataSet": [
+            {
+              "id": "BASE_PERIOD",
+              "name": "Reference Base Period",
+              "names": { "en": "Reference Base Period" },
+              "roles": ["BASE_PERIOD"],
+              "relationship": { "dataflow": {} },
+              "values": [{ "id": "25", "order": 24, "name": "Sep 2025 = 100.0", "names": { "en": "Sep 2025 = 100.0" } }]
+            }
+          ],
+          "dimensionGroup": [],
+          "series": [
+            {
+              "id": "UNIT_MEASURE",
+              "name": "Unit of Measure",
+              "names": { "en": "Unit of Measure" },
+              "roles": ["UNIT_MEASURE"],
+              "relationship": { "dimensions": ["MEASURE"] },
+              "values": [{ "id": "PCT", "order": 2, "name": "Percent", "names": { "en": "Percent" } }],
+              "annotations": [11]
+            }
+          ],
+          "observation": [
+            {
+              "id": "OBS_STATUS",
+              "name": "Observation Status",
+              "names": { "en": "Observation Status" },
+              "roles": ["OBS_STATUS"],
+              "relationship": { "observation": {} },
+              "values": []
+            },
+            { "id": "DECIMALS", "name": "Decimals", "names": { "en": "Decimals" }, "roles": ["DECIMALS"], "relationship": { "observation": {} }, "values": [] },
+            {
+              "id": "OBS_COMMENT",
+              "name": "Observation Comment",
+              "names": { "en": "Observation Comment" },
+              "roles": ["OBS_COMMENT"],
+              "relationship": { "observation": {} },
+              "values": []
+            }
+          ]
+        },
+        "annotations": [
+          { "type": "NonProductionDataflow", "text": "true", "texts": { "en": "true" } },
+          { "title": "TIME_PERIOD", "type": "LAYOUT_COLUMN" },
+          { "title": "INDEX", "type": "LAYOUT_ROW" },
+          { "title": "MEASURE,TSEST,REGION", "type": "LAYOUT_ROW_SECTION" },
+          { "title": "MEASURE=3,REGION=50,FREQ=M,LASTNPERIODS=4", "type": "DEFAULT" },
+          {
+            "type": "EXT_RESOURCE",
+            "text": "Methodology|https://www.abs.gov.au/statistics/economy/price-indexes-and-inflation/consumer-price-index-australia/latest-release#methodology|https://www.abs.gov.au/ausstats/wmdata.nsf/activeimages/methodology/$File/methodology.png",
+            "texts": {
+              "en": "Methodology|https://www.abs.gov.au/statistics/economy/price-indexes-and-inflation/consumer-price-index-australia/latest-release#methodology|https://www.abs.gov.au/ausstats/wmdata.nsf/activeimages/methodology/$File/methodology.png"
+            }
+          },
+          { "type": "ORDER", "text": "3", "texts": { "en": "3" } },
+          { "type": "ORDER", "text": "10", "texts": { "en": "10" } },
+          { "type": "ORDER", "text": "1", "texts": { "en": "1" } },
+          { "type": "FULL_NAME", "text": "Original", "texts": { "en": "Original" } },
+          {
+            "type": "OTHER_LINKS",
+            "text": "https://www.abs.gov.au/websitedbs/D3310114.nsf/home/Time+Series+Analysis:+The+Basics",
+            "texts": { "en": "https://www.abs.gov.au/websitedbs/D3310114.nsf/home/Time+Series+Analysis:+The+Basics" }
+          },
+          {
+            "type": "CONTEXT",
+            "text": "If a unit multiplier exists the data is recorded according to the combination of the unit multiplier and the unit of measure.",
+            "texts": { "en": "If a unit multiplier exists the data is recorded according to the combination of the unit multiplier and the unit of measure." }
+          }
+        ],
+        "dataSets": [0]
+      }
+    ]
+  },
+  "errors": []
+}

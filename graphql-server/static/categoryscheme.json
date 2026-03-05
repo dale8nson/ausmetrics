@@ -1,0 +1,290 @@
+{
+  "data": {
+    "categorySchemes": [
+      {
+        "id": "C21_ASGS",
+        "links": [{ "href": "http://data.api.abs.gov.au/rest/categoryscheme/ABS/C21_ASGS/1.0.0", "rel": "external" }],
+        "version": "1.0.0",
+        "agencyID": "ABS",
+        "isExternalReference": true,
+        "isFinal": true,
+        "name": "Census 2021",
+        "names": { "en": "Census 2021" },
+        "isPartial": false
+      },
+      {
+        "id": "C21_CED",
+        "links": [{ "href": "http://data.api.abs.gov.au/rest/categoryscheme/ABS/C21_CED/1.0.0", "rel": "external" }],
+        "version": "1.0.0",
+        "agencyID": "ABS",
+        "isExternalReference": true,
+        "isFinal": true,
+        "name": "Census 2021",
+        "names": { "en": "Census 2021" },
+        "isPartial": false
+      },
+      {
+        "id": "C21_IARE",
+        "links": [{ "href": "http://data.api.abs.gov.au/rest/categoryscheme/ABS/C21_IARE/1.0.0", "rel": "external" }],
+        "version": "1.0.0",
+        "agencyID": "ABS",
+        "isExternalReference": true,
+        "isFinal": true,
+        "name": "Census 2021",
+        "names": { "en": "Census 2021" },
+        "isPartial": false
+      },
+      {
+        "id": "C21_ILOC",
+        "links": [{ "href": "http://data.api.abs.gov.au/rest/categoryscheme/ABS/C21_ILOC/1.0.0", "rel": "external" }],
+        "version": "1.0.0",
+        "agencyID": "ABS",
+        "isExternalReference": true,
+        "isFinal": true,
+        "name": "Census 2021",
+        "names": { "en": "Census 2021" },
+        "isPartial": false
+      },
+      {
+        "id": "C21_IREG",
+        "links": [{ "href": "http://data.api.abs.gov.au/rest/categoryscheme/ABS/C21_IREG/1.0.0", "rel": "external" }],
+        "version": "1.0.0",
+        "agencyID": "ABS",
+        "isExternalReference": true,
+        "isFinal": true,
+        "name": "Census 2021",
+        "names": { "en": "Census 2021" },
+        "isPartial": false
+      },
+      {
+        "id": "C21_LGA",
+        "links": [{ "href": "http://data.api.abs.gov.au/rest/categoryscheme/ABS/C21_LGA/1.0.0", "rel": "external" }],
+        "version": "1.0.0",
+        "agencyID": "ABS",
+        "isExternalReference": true,
+        "isFinal": true,
+        "name": "Census 2021",
+        "names": { "en": "Census 2021" },
+        "isPartial": false
+      },
+      {
+        "id": "C21_POA",
+        "links": [{ "href": "http://data.api.abs.gov.au/rest/categoryscheme/ABS/C21_POA/1.0.0", "rel": "external" }],
+        "version": "1.0.0",
+        "agencyID": "ABS",
+        "isExternalReference": true,
+        "isFinal": true,
+        "name": "Census 2021",
+        "names": { "en": "Census 2021" },
+        "isPartial": false
+      },
+      {
+        "id": "C21_RA",
+        "links": [{ "href": "http://data.api.abs.gov.au/rest/categoryscheme/ABS/C21_RA/1.0.0", "rel": "external" }],
+        "version": "1.0.0",
+        "agencyID": "ABS",
+        "isExternalReference": true,
+        "isFinal": true,
+        "name": "Census 2021",
+        "names": { "en": "Census 2021" },
+        "isPartial": false
+      },
+      {
+        "id": "C21_SAL",
+        "links": [{ "href": "http://data.api.abs.gov.au/rest/categoryscheme/ABS/C21_SAL/1.0.0", "rel": "external" }],
+        "version": "1.0.0",
+        "agencyID": "ABS",
+        "isExternalReference": true,
+        "isFinal": true,
+        "name": "Census 2021",
+        "names": { "en": "Census 2021" },
+        "isPartial": false
+      },
+      {
+        "id": "C21_SED",
+        "links": [{ "href": "http://data.api.abs.gov.au/rest/categoryscheme/ABS/C21_SED/1.0.0", "rel": "external" }],
+        "version": "1.0.0",
+        "agencyID": "ABS",
+        "isExternalReference": true,
+        "isFinal": true,
+        "name": "Census 2021",
+        "names": { "en": "Census 2021" },
+        "isPartial": false
+      },
+      {
+        "id": "C21_SOS",
+        "links": [{ "href": "http://data.api.abs.gov.au/rest/categoryscheme/ABS/C21_SOS/1.0.0", "rel": "external" }],
+        "version": "1.0.0",
+        "agencyID": "ABS",
+        "isExternalReference": true,
+        "isFinal": true,
+        "name": "Census 2021",
+        "names": { "en": "Census 2021" },
+        "isPartial": false
+      },
+      {
+        "id": "C21_SOSR",
+        "links": [{ "href": "http://data.api.abs.gov.au/rest/categoryscheme/ABS/C21_SOSR/1.0.0", "rel": "external" }],
+        "version": "1.0.0",
+        "agencyID": "ABS",
+        "isExternalReference": true,
+        "isFinal": true,
+        "name": "Census 2021",
+        "names": { "en": "Census 2021" },
+        "isPartial": false
+      },
+      {
+        "id": "C21_SUA",
+        "links": [{ "href": "http://data.api.abs.gov.au/rest/categoryscheme/ABS/C21_SUA/1.0.0", "rel": "external" }],
+        "version": "1.0.0",
+        "agencyID": "ABS",
+        "isExternalReference": true,
+        "isFinal": true,
+        "name": "Census 2021",
+        "names": { "en": "Census 2021" },
+        "isPartial": false
+      },
+      {
+        "id": "C21_UCL",
+        "links": [{ "href": "http://data.api.abs.gov.au/rest/categoryscheme/ABS/C21_UCL/1.0.0", "rel": "external" }],
+        "version": "1.0.0",
+        "agencyID": "ABS",
+        "isExternalReference": true,
+        "isFinal": true,
+        "name": "Census 2021",
+        "names": { "en": "Census 2021" },
+        "isPartial": false
+      },
+      {
+        "id": "CENSUS_2011",
+        "links": [{ "href": "http://data.api.abs.gov.au/rest/categoryscheme/ABS/CENSUS_2011/1.0.0", "rel": "external" }],
+        "version": "1.0.0",
+        "agencyID": "ABS",
+        "isExternalReference": true,
+        "isFinal": true,
+        "name": "Census 2011",
+        "names": { "en": "Census 2011" },
+        "isPartial": false
+      },
+      {
+        "id": "CENSUS_2016",
+        "links": [{ "href": "http://data.api.abs.gov.au/rest/categoryscheme/ABS/CENSUS_2016/1.0.0", "rel": "external" }],
+        "version": "1.0.0",
+        "agencyID": "ABS",
+        "isExternalReference": true,
+        "isFinal": true,
+        "name": "Census 2016",
+        "names": { "en": "Census 2016" },
+        "isPartial": false
+      },
+      {
+        "id": "CENSUS_2026",
+        "links": [{ "href": "http://data.api.abs.gov.au/rest/categoryscheme/ABS/CENSUS_2026/1.0.0", "rel": "external" }],
+        "version": "1.0.0",
+        "agencyID": "ABS",
+        "isExternalReference": true,
+        "isFinal": false,
+        "name": "Census 2026",
+        "names": { "en": "Census 2026" },
+        "isPartial": false
+      },
+      {
+        "id": "DATA_BY_REGION",
+        "links": [{ "href": "http://data.api.abs.gov.au/rest/categoryscheme/ABS/DATA_BY_REGION/1.0.0", "rel": "external" }],
+        "version": "1.0.0",
+        "agencyID": "ABS",
+        "isExternalReference": true,
+        "isFinal": true,
+        "name": "Data by region",
+        "names": { "en": "Data by region" },
+        "isPartial": false
+      },
+      {
+        "id": "ECONOMY",
+        "links": [{ "href": "http://data.api.abs.gov.au/rest/categoryscheme/ABS/ECONOMY/1.0.0", "rel": "external" }],
+        "version": "1.0.0",
+        "agencyID": "ABS",
+        "isExternalReference": true,
+        "isFinal": true,
+        "name": "Economy",
+        "names": { "en": "Economy" },
+        "isPartial": false
+      },
+      {
+        "id": "ENVIRONMENT",
+        "links": [{ "href": "http://data.api.abs.gov.au/rest/categoryscheme/ABS/ENVIRONMENT/1.0.0", "rel": "external" }],
+        "version": "1.0.0",
+        "agencyID": "ABS",
+        "isExternalReference": true,
+        "isFinal": true,
+        "name": "Environment",
+        "names": { "en": "Environment" },
+        "isPartial": false
+      },
+      {
+        "id": "HEALTH",
+        "links": [{ "href": "http://data.api.abs.gov.au/rest/categoryscheme/ABS/HEALTH/1.0.0", "rel": "external" }],
+        "version": "1.0.0",
+        "agencyID": "ABS",
+        "isExternalReference": true,
+        "isFinal": true,
+        "name": "Health",
+        "names": { "en": "Health" },
+        "isPartial": false
+      },
+      {
+        "id": "INDUSTRY",
+        "links": [{ "href": "http://data.api.abs.gov.au/rest/categoryscheme/ABS/INDUSTRY/1.0.0", "rel": "external" }],
+        "version": "1.0.0",
+        "agencyID": "ABS",
+        "isExternalReference": true,
+        "isFinal": true,
+        "name": "Industries",
+        "names": { "en": "Industries" },
+        "isPartial": false
+      },
+      {
+        "id": "LABOUR",
+        "links": [{ "href": "http://data.api.abs.gov.au/rest/categoryscheme/ABS/LABOUR/1.0.0", "rel": "external" }],
+        "version": "1.0.0",
+        "agencyID": "ABS",
+        "isExternalReference": true,
+        "isFinal": true,
+        "name": "Labour",
+        "names": { "en": "Labour" },
+        "isPartial": false
+      },
+      {
+        "id": "PEOPLE",
+        "links": [{ "href": "http://data.api.abs.gov.au/rest/categoryscheme/ABS/PEOPLE/1.0.0", "rel": "external" }],
+        "version": "1.0.0",
+        "agencyID": "ABS",
+        "isExternalReference": true,
+        "isFinal": true,
+        "name": "People",
+        "names": { "en": "People" },
+        "isPartial": false
+      },
+      {
+        "id": "SNAPSHOTS",
+        "links": [{ "href": "http://data.api.abs.gov.au/rest/categoryscheme/ABS/SNAPSHOTS/1.0.0", "rel": "external" }],
+        "version": "1.0.0",
+        "agencyID": "ABS",
+        "isExternalReference": true,
+        "isFinal": true,
+        "name": "Snapshots",
+        "names": { "en": "Snapshots" },
+        "isPartial": false
+      }
+    ]
+  },
+  "meta": {
+    "schema": "https://raw.githubusercontent.com/sdmx-twg/sdmx-json/develop/structure-message/tools/schemas/1.0/sdmx-json-structure-schema.json",
+    "contentLanguages": ["en"],
+    "id": "IDREF327",
+    "prepared": "2026-03-01T10:54:02Z",
+    "test": false,
+    "sender": { "id": "Unknown" },
+    "receiver": [{ "id": "Unknown" }]
+  }
+}

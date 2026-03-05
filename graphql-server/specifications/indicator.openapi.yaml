@@ -1,0 +1,164 @@
+openapi: 3.0.3
+info:
+  version: '1.0.0'
+  title: ABS Indicator API (Beta)
+  termsOfService: 'https://www.abs.gov.au/about/data-services/application-programming-interfaces-apis/indicator-api/terms-use' 
+  contact:
+    email: api.data@abs.gov.au
+  description: |
+    <div>
+      <h2>About the Beta</h2>
+      <p>This beta release allows you to preview ABS Indicator API before it is released in its final form and gives you the opportunity to provide the ABS with feedback as we work to enhance the service.  ABS Indicator API (Beta) should not be relied upon as a production system until the ABS formally advises that the service is Live and ready for production use, expected to be later in 2023.</p>
+      <p>Headline economic statistics are currently published in ABS Indicator API (Beta) at 11:31am AEST on release day.  Starting on August 1, 2023, we will commence releasing statistics in this service as soon as embargo is lifted at 11:30am AEST.</p>
+      <p>Availability of the ABS Indicator API (Beta) is not guaranteed. For the most up to date information visit the <a href="https://www.abs.gov.au/" target="_blank">ABS website</a>.</p>
+      <p>If you have feedback or questions, please contact the ABS APIs team at <a href="mailto:api.data@abs.gov.au">api.data@abs.gov.au</a>. You can request to join our register of interest to be notified of any changes in the API. The <a href="https://www.abs.gov.au/websitedbs/D3310114.nsf/Home/Privacy?opendocument#from-banner=GB" target="_blank">ABS privacy policy</a> outlines how the ABS handles any personal information that you provide to us.</p>
+    </div>
+    <div>
+      <h2>Key Information</h2>
+      <p>The ABS Indicator REST API allows you to request headline economic statistics from the ABS including Australia's key economic indicators.</p>
+      <p>All datasets are small, containing only the most in-demand data, so responses are returned as fast as possible. If you wish to request full economic datasets you can do so using the ABS Data API (Beta).</p>
+      <p>The ABS Indicator API uses the Statistical Data and Metadata Exchange (SDMX) standard.  Data is available in XML, JSON and CSV.</p>
+    </div>
+    <div>
+      <h2>Request Access</h2>
+      <p>An API Key is required to access the ABS Indicator API. </p>
+      <p>To request access, please carefully read the <a href="https://www.abs.gov.au/about/data-services/application-programming-interfaces-apis/indicator-api/terms-use" target="_blank">ABS Indicator API Terms of Use</a>. Then complete an <a href="https://www.abs.gov.au/about/data-services/application-programming-interfaces-apis/indicator-api#request-access" target="_blank">ABS Indicator API Request Form</a> indicating you accept the Terms of Use and email it to <a href="mailto:api.data@abs.gov.au">api.data@abs.gov.au</a>.</p>
+      </div>
+externalDocs:
+  description: ABS Indicator API User Guide
+  url: 'https://www.abs.gov.au/about/data-services/application-programming-interfaces-apis/indicator-api'
+tags:
+  - name: Get Data
+    description: Get statistical data
+  - name: Get Metadata
+    description: Get statistical metadata
+servers:
+  - url: 'https://indicator.api.abs.gov.au'
+paths:
+  '/v1/data/{dataflowIdentifier}/{format}': 
+    get: 
+      tags:
+        - Get Data
+      summary: Request data for specifed dataflow
+      operationId: getUserByName
+      parameters:
+        - name: dataflowIdentifier
+          in: path
+          description: Identifier for dataflow to request data from.
+          required: true
+          schema:
+            $ref: '#/components/schemas/dataflowId'
+        - name: format
+          in: path
+          description: Format to return data in (json, csv, xml).
+          required: true
+          schema:
+            $ref: '#/components/schemas/dataFormat'
+      security:
+        - x-api-key: []
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/file'
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/file'
+            text/csv:
+              schema:
+                $ref: '#/components/schemas/file'
+        '400':
+          description: Invalid request or format.
+        '403':
+          description: Forbidden.
+        '404':
+          description: Not found. Dataflow identifier may be incorrect or not available.
+        '429':
+          description: Too many requests. You have exceeded the rate limit allowed for your API key. Please reduce your request rate.
+  '/v1/metadata/{dataflowIdentifier}/{format}':
+    get:
+      tags:
+        - Get Metadata
+      summary: Request metadata for specifed dataflow
+      parameters:
+        - name: dataflowIdentifier
+          in: path
+          description: Identifier for dataflow to request metadata from.
+          required: true
+          schema:
+            $ref: '#/components/schemas/dataflowId'
+        - name: format
+          in: path
+          description: Format to return metadata in (json, xml).
+          required: true
+          schema:
+            $ref: '#/components/schemas/metadataFormat'
+      security:
+        - x-api-key: []
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/file'
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/file'
+        '400':
+          description: Invalid request or format.
+        '403':
+          description: Forbidden.
+        '404':
+          description: Not found. Dataflow identifier may be incorrect or not available.
+        '429':
+          description: Too many requests. You have exceeded the rate limit allowed for your API key. Please reduce your request rate.
+components:
+  schemas:
+    dataflowId:
+      type: string
+      enum:
+        - AWE_H
+        - BA_GCCSA_H
+        - BOP_H
+        - BUILDING_ACTIVITY_H
+        - CAPEX_H
+        - CAPEX_EST_H
+        - CPI_H
+        - CPI_M_H
+        - CWD_H
+        - GDPE_H
+        - HSI_M_H
+        - ITGS_H
+        - ITPI_EXP_H
+        - ITPI_IMP_H
+        - JV_H
+        - LEND_H
+        - LF_H
+        - MBTI_H
+        - PPI_FD_H
+        - QBIS_H
+        - RT_H
+        - WPI_H
+    dataFormat:
+      type: string
+      enum:
+        - json
+        - csv
+        - xml
+    metadataFormat:
+      type: string
+      enum:
+        - json
+        - xml
+    file:
+      title: File
+      type: string
+      format: binary
+  securitySchemes:
+    x-api-key:
+      type: apiKey 
+      in: header 
+      name: x-api-key 

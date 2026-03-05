@@ -5,6 +5,11 @@ use leptos_router::{
     StaticSegment, WildcardSegment,
 };
 
+// use crate::components::line_chart::LineChart;
+use crate::line_chart::LineChart;
+
+/// red #E50027 blue #001B69
+
 #[component]
 pub fn App() -> impl IntoView {
     // Provides context that manages stylesheets, titles, meta tags, etc.
@@ -16,7 +21,7 @@ pub fn App() -> impl IntoView {
         <Stylesheet id="leptos" href="/pkg/ausmetrics.css"/>
 
         // sets the document title
-        <Title text="Welcome to Leptos"/>
+        <Title text="AUSMETRICS"/>
 
         // content for this welcome page
         <Router>
@@ -33,13 +38,15 @@ pub fn App() -> impl IntoView {
 /// Renders the home page of your application.
 #[component]
 fn HomePage() -> impl IntoView {
-    // Creates a reactive value to update the button
-    let count = RwSignal::new(0);
-    let on_click = move |_| *count.write() += 1;
-
     view! {
-        <h1>"Welcome to Leptos!"</h1>
-        <button on:click=on_click>"Click Me: " {count}</button>
+      <header class="p-5 w-full h-32 flex flex-col justify-center  items-start"><h1 class="subpixel-antialiased tracking-[-3.5]  text-7xl font-thin text-[#001B69] font-serif"><span class="font-black">"A"</span><span class="text-6xl font-semibold text-[#E50027]">"US"</span><span class="font-black">"M"</span><span class="text-6xl font-semibold text-[#E50027]">"ETRICS"</span></h1>
+        <hr class="border-[#001B69] border-double border-2 w-full"/>
+      </header>
+      <div class="flex-col space-y-4 justify-start items-start w-2/3 m-auto h-full [&_*]:font-sans [&_*]:text-[#001B69] [&_text]:fill-[#001B69] [&_*]:text-lg">
+        <Transition>
+        <LineChart/>
+        </Transition>
+      </div>
     }
 }
 

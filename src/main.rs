@@ -1,16 +1,48 @@
+use dotenv::from_filename;
+use log::{debug, LevelFilter};
+use tracing_subscriber::{fmt, prelude::*, EnvFilter};
+pub mod components;
+
 #[cfg(feature = "ssr")]
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
     use actix_files::Files;
     use actix_web::*;
-    use leptos::prelude::*;
-    use leptos::config::get_configuration;
-    use leptos_meta::MetaTags;
-    use leptos_actix::{generate_route_list, LeptosRoutes};
     use ausmetrics::app::*;
+    use leptos::config::get_configuration;
+    use leptos::prelude::*;
+    use leptos_actix::{generate_route_list, LeptosRoutes};
+    use leptos_meta::MetaTags;
+
+    from_filename(".env.local").ok();
 
     let conf = get_configuration(None).unwrap();
     let addr = conf.leptos_options.site_addr;
+
+    env_logger::Builder::new()
+        .format_source_path(true)
+        .format_module_path(false)
+        .format_target(false)
+        .format_timestamp(None)
+        // .filter(Some("leptos"), LevelFilter::Trace)
+        .filter_module("ausmetrics::components", LevelFilter::Debug)
+        // .filter(Some("reactive_graph-0.2.12"), LevelFilter::Off)
+        // .filter_module("leptos_reactive", LevelFilter::Error)
+        // .filter_level(LevelFilter::Debug)
+        .init();
+
+    // let filter = EnvFilter::try_from_default_env()
+    //     .unwrap_or_else(|_| EnvFilter::new("info")) // Fallback to info
+    //     .add_directive("reactive_graph=error".parse().unwrap())
+    //     .add_directive("leptos_router=error".parse().unwrap())
+    //     .add_directive("leptos_chartistry=error".parse().unwrap());
+
+    // tracing_subscriber::registry()
+    //     .with(fmt::layer())
+    //     .with(filter)
+    //     .init();
+
+    // debug!("{:?}", std::env::vars());
 
     HttpServer::new(move || {
         // Generate the list of routes in your Leptos App
@@ -40,7 +72,7 @@ async fn main() -> std::io::Result<()> {
                                 <HydrationScripts options=leptos_options.clone()/>
                                 <MetaTags/>
                             </head>
-                            <body>
+                            <body class="flex flex-col w-screen h-screen bg-neutral-200">
                                 <App/>
                             </body>
                         </html>
