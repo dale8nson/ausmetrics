@@ -71,6 +71,7 @@ async fn main() -> std::io::Result<()> {
                                 <AutoReload options=leptos_options.clone() />
                                 <HydrationScripts options=leptos_options.clone()/>
                                 <MetaTags/>
+                                <script src="assets/echarts.min.js" />
                             </head>
                             <body class="flex flex-col w-screen h-screen bg-neutral-200">
                                 <App/>

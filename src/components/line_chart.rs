@@ -8,23 +8,39 @@ use std::{
 
 use chrono::{DateTime, FixedOffset, Local, NaiveDate, NaiveDateTime, TimeZone, Utc};
 use jsonpath_rust::query::{js_path, js_path_process, js_path_vals};
-use leptos::{attr::height, html::Caption, prelude::*, reactive::signal};
+use leptos::{
+    attr::height,
+    html::{Caption, Div},
+    prelude::*,
+    reactive::signal,
+};
 use leptos::{logging::debug_log, reactive::diagnostics::SpecialNonReactiveZone};
-use leptos_chartistry::{
-    AspectRatio, AxisMarker, Chart, Colour, IntoInner, Legend, Line, Period, RotatedLabel, Series,
-    TickLabels, Timestamps, Tooltip, XGridLine, XGuideLine, YGridLine, YGuideLine,
+// use leptos_chartistry::{
+//     AspectRatio, AxisMarker, Chart, Colour, ColourScheme, IntoInner, Legend, Line, Period,
+//     RotatedLabel, Series, TickLabels, Timestamps, Tooltip, XGridLine, XGuideLine, YGridLine,
+//     YGuideLine, LINEAR_GRADIENT,
+// };
+//
+#[cfg(target_arch = "wasm32")]
+use charming::{
+    component::{Axis, Legend, Title},
+    datatype::{CompositeValue, NumericValue},
+    element::{AxisType, LabelAlign, TextAlign},
+    WasmRenderer,
 };
 
 use log::{debug, error};
 use serde::{Deserialize, Serialize};
 use serde_json::{from_reader, Map, Number, Value};
 
-#[derive(Clone, Debug)]
+use wasm_bindgen::UnwrapThrowExt;
+
+#[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct Data {
     x: f64,
     y: f64,
     ir: f64,
-    date: DateTime<Local>,
+    date: String,
 }
 
 #[server]
@@ -91,7 +107,7 @@ pub fn extract_observations(binding: &Value) -> Vec<Data> {
 
     debug!("periods: {periods:#?}");
 
-    let mut dates = Vec::<DateTime<Local>>::new();
+    let mut dates = Vec::<String>::new();
     periods.sort_by(|a, b| {
         let s1 = if let Value::String(s1) = a {
             s1
@@ -118,7 +134,7 @@ pub fn extract_observations(binding: &Value) -> Vec<Data> {
             .unwrap();
         // let date_string = date.to_string();
         // debug!("date: {date_string}");
-        dates.push(date);
+        dates.push(format!("{}", date.format("%b %Y").to_string()));
     }
 
     dates.sort();
@@ -126,18 +142,14 @@ pub fn extract_observations(binding: &Value) -> Vec<Data> {
     data_points
         .into_iter()
         .zip(dates)
-        .map(|((x, y, r), date)| Data {
-            x,
-            y,
-            ir: r,
-            date: date,
-        })
+        .map(|((x, y, r), date)| Data { x, y, ir: r, date })
         .collect::<Vec<Data>>()
 }
 
 #[component]
 pub fn LineChart() -> impl IntoView {
     debug!("LineChart");
+    let chart_ref = NodeRef::<Div>::new();
     let data = Resource::new(
         || (),
         |_| async move {
@@ -147,60 +159,72 @@ pub fn LineChart() -> impl IntoView {
     );
 
     let observations: Signal<Vec<Data>> = Signal::derive(move || {
-        let Some(result) = data.get() else {
+        let data = data.get();
+        let Some(result) = data else {
             return Vec::new();
         };
 
         let res = match result {
-            Ok(ref value) => {
-                let observations = extract_observations(value);
-                debug!("observations: {observations:#?}");
-                observations
-            }
+            Ok(ref value) => extract_observations(value),
             Err(err) => {
                 debug!("Error loading JSON: {err:?}");
-                Vec::new()
+                Vec::<Data>::new()
             }
         };
         res
     });
     debug!("observations: {:#?}", observations.get());
-    let x_ticks = TickLabels::from_generator(Timestamps::from_period(Period::Month))
-        .with_format(|d, _| format!("{}", d.format("%b %Y")));
+    // let x_ticks = TickLabels::from_generator(Timestamps::from_period(Period::Month))
+    //     .with_format(|d, _| format!("{}", d.format("%b %Y")));
     // debug!("{x_ticks:#?}");
     // let _guard =
     // SpecialNonReactiveZone::enter();
     // debug!("_guard: {_guard:?}");
+    //
+    #[cfg(target_arch = "wasm32")]
+    Effect::new(move |_| {
+        use std::char::CharTryFromError;
+
+        println!("Effect");
+
+        type EChart = charming::Chart;
+
+        let data = observations.get();
+        let chart = EChart::new()
+            .title(
+                Title::new()
+                    .text("Consumer Price Index (CPI) / Cash Rate Target (CRT)")
+                    .text_align(TextAlign::Auto),
+            )
+            .series(charming::series::Series::Line(
+                charming::series::Line::new().data(data.iter().map(|ob| ob.y).collect()),
+            ))
+            .series(charming::series::Series::Line(
+                charming::series::Line::new().data(data.iter().map(|ob| ob.ir).collect()),
+            ))
+            .x_axis(Axis::new().data(data.into_iter().map(|d| d.date).collect::<Vec<String>>()))
+            .y_axis(Axis::new().type_(AxisType::Value))
+            .legend(
+                Legend::new()
+                    .data(vec!["CPI", "CRT"])
+                    .align(LabelAlign::Center)
+                    .show(true),
+            );
+
+        let el = chart_ref.get().expect("div should be mounted").value();
+        debug!("{el:#?}");
+        let width = el.client_width();
+        let height = el.client_height();
+
+        eprintln!("width: {width} height: {height}");
+        let renderer = WasmRenderer::new(width as u32, height as u32);
+        renderer.render("chart", &chart).unwrap();
+    });
+
     view! {
 
-        <div class="w-full flex-col h-fit m-auto border-2 border-solid border-black bg-white">
-
-          <Chart
-          aspect_ratio=AspectRatio::from_env_width(500.)
-          series=Series::new(|data: &Data|  data.date )
-          .line(Line::new(|data: &Data| data.y).with_name("CPI").with_colour(Colour::from_rgb(0, 0x88, 0)))
-          .line(Line::new(|data: &Data| data.ir).with_name("CRT").with_colour(Colour::from_rgb(0xff, 0, 0)))
-          data=observations
-          top=RotatedLabel::middle("Consumer Price Index (CPI)/Cash Rate Target (CRT)")
-          // <!-- left=TickLabels::aligned_floats() -->
-          left=TickLabels::aligned_floats()
-          right=Legend::end()
-          // <!-- bottom=x_ticks.clone()
-          // -->
-          bottom=x_ticks.clone()
-            // .with_strftime("%MMM %y".to_string())
-          tooltip=Tooltip::left_cursor()
-          inner=[
-            // AxisMarker::left_edge().into_inner(),
-            // AxisMarker::bottom_edge().into_inner(),
-            XGridLine::from_ticks(x_ticks).with_colour(Colour::from_rgb(0xA0,0xA0,0xA0)).into_inner(),
-            YGridLine::default().with_colour(Colour::from_rgb(0xA0,0xA0,0xA0)).into_inner(),
-            YGuideLine::over_mouse().into_inner(),
-            XGuideLine::over_data().into_inner(),
-          ]
-          font_height=Signal::stored(22.)
-          />
-
+        <div class="w-full flex-col h-fit m-auto border-2 border-solid border-black bg-white font-serif">
+          <div node_ref=chart_ref class="w-2/3 h-full" id="chart" ></div>
         </div>
         <p class="w-full text-right">"Sources: ABS/RBA"</p>
     }
@@ -297,3 +321,29 @@ pub fn LineChart() -> impl IntoView {
 // Living Costs	ABS Selected Living Cost Indexes
 // Environment	Environmental-Economic Accounts (EEA) Dashboard
 // Social Policy	ANU PolicyMod Microsimulation (for future projections)
+
+// <Chart
+// aspect_ratio=AspectRatio::from_env_width(500.)
+// series=Series::new(|data: &Data|  data.date )
+// .line(Line::new(|data: &Data| data.y).with_name("CPI").with_colour(Colour::from_rgb(0, 0x88, 0)))
+// .line(Line::new(|data: &Data| data.ir).with_name("CRT").with_gradient(LINEAR_GRADIENT))
+// data=observations
+// top=Legend::start()
+// // <!-- left=TickLabels::aligned_floats() -->
+// left=TickLabels::aligned_floats()
+
+// // <!-- bottom=x_ticks.clone()
+// // -->
+// bottom=x_ticks.clone()
+//   // .with_strftime("%MMM %y".to_string())
+// tooltip=Tooltip::left_cursor()
+// inner=[
+//   // AxisMarker::left_edge().into_inner(),
+//   // AxisMarker::bottom_edge().into_inner(),
+//   XGridLine::from_ticks(x_ticks).with_colour(Colour::from_rgb(0xA0,0xA0,0xA0)).into_inner(),
+//   YGridLine::default().with_colour(Colour::from_rgb(0xA0,0xA0,0xA0)).into_inner(),
+//   YGuideLine::over_mouse().into_inner(),
+//   XGuideLine::over_data().into_inner(),
+// ]
+// font_height=Signal::stored(22.)
+// />

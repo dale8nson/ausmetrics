@@ -27,9 +27,10 @@ log = "0.4.29"
 chrono = { version = "0.4.44", features = ["clock"]}
 dotenv = "0.15.0"
 tracing-subscriber = { version = "0.3.22", features = ["env-filter"] }
+charming = { version = "0.6.0", features = ["wasm"] }
 
 [features]
-csr = ["leptos/csr"]
+csr = ["leptos/csr", "charming/wasm"]
 hydrate = ["leptos/hydrate"]
 ssr = [
   "dep:actix-files",
@@ -38,7 +39,7 @@ ssr = [
   "leptos/ssr",
   "leptos_meta/ssr",
   "leptos_router/ssr",
-  "leptos-chartistry/ssr"
+  "leptos-chartistry/ssr",
 ]
 
 # Defines a size-optimized profile for the WASM bundle in release mode
