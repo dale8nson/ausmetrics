@@ -1,0 +1,905 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AusMetrics – Australian Public Data</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&family=DM+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --navy: #001b69;
+        --navy-hover: #002080;
+        --red: #e50027;
+        --red-dim: #b8001f;
+        --red-glow: rgba(229, 0, 39, 0.08);
+        --bg: #ffffff;
+        --bg-subtle: #f6f7fb;
+        --bg-ruled: #f0f2f9;
+        --border: #dde1ef;
+        --border-str: #c8ccdf;
+        --text: #0f1a3a;
+        --text-mid: #3d4f7a;
+        --muted: #7a8db8;
+        --up: #007a3d;
+        --up-bg: #edf7f1;
+        --down: #e50027;
+        --down-bg: #fff0f2;
+        --accent2: #0a5eb8;
+      }
+
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        background: var(--bg-subtle);
+        color: var(--text);
+        font-family: "DM Sans", sans-serif;
+        font-weight: 400;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+      }
+
+      /* ── HEADER ── */
+      header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 2rem;
+        height: 58px;
+        background: var(--navy);
+        border-bottom: 3px solid var(--red);
+        position: sticky;
+        top: 0;
+        z-index: 100;
+      }
+
+      .logo {
+        display: flex;
+        align-items: center;
+        gap: 0.85rem;
+        text-decoration: none;
+      }
+
+      .logo-icon {
+        width: 34px;
+        height: 34px;
+        background: var(--red);
+        border-radius: 3px;
+        display: flex;
+        align-items: flex-end;
+        justify-content: center;
+        gap: 3px;
+        padding-bottom: 6px;
+        flex-shrink: 0;
+      }
+
+      .logo-icon span {
+        background: #fff;
+        border-radius: 1px;
+        display: block;
+      }
+
+      .logo-wordmark {
+        font-family: "DM Sans", sans-serif;
+        font-weight: 500;
+        font-size: 1rem;
+        letter-spacing: 0.14em;
+        color: #fff;
+      }
+
+      .logo-wordmark small {
+        display: block;
+        font-size: 0.57rem;
+        letter-spacing: 0.1em;
+        color: rgba(255, 255, 255, 0.45);
+        margin-top: 1px;
+        font-weight: 300;
+      }
+
+      .header-right {
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+      }
+
+      .header-meta {
+        font-size: 0.7rem;
+        color: rgba(255, 255, 255, 0.45);
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+      }
+
+      .pulse {
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+        color: #4cd98a;
+      }
+      .dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: #4cd98a;
+        animation: blink 2s infinite;
+      }
+
+      @keyframes blink {
+        0%,
+        100% {
+          opacity: 1;
+        }
+        50% {
+          opacity: 0.2;
+        }
+      }
+
+      /* ── SHELL ── */
+      .shell {
+        display: flex;
+        flex: 1;
+      }
+
+      /* ── SIDEBAR ── */
+      nav {
+        width: 196px;
+        min-width: 196px;
+        background: var(--bg);
+        border-right: 1px solid var(--border);
+        padding: 1.5rem 0;
+        display: flex;
+        flex-direction: column;
+        position: sticky;
+        top: 58px;
+        height: calc(100vh - 58px);
+        overflow-y: auto;
+      }
+
+      .nav-label {
+        font-size: 0.59rem;
+        letter-spacing: 0.18em;
+        color: var(--muted);
+        text-transform: uppercase;
+        padding: 0 1.25rem;
+        margin: 1rem 0 0.3rem;
+        font-weight: 500;
+      }
+
+      .nav-item {
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+        padding: 0.45rem 1.25rem;
+        font-size: 0.83rem;
+        color: var(--text-mid);
+        cursor: pointer;
+        border-left: 2px solid transparent;
+        transition: all 0.13s;
+        text-decoration: none;
+        font-weight: 400;
+      }
+
+      .nav-item:hover {
+        color: var(--navy);
+        background: var(--bg-ruled);
+      }
+
+      .nav-item.active {
+        color: var(--navy);
+        border-left-color: var(--red);
+        background: var(--red-glow);
+        font-weight: 500;
+      }
+
+      .nav-icon {
+        width: 16px;
+        height: 16px;
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        transition: opacity 0.15s;
+      }
+
+      .nav-item.active .nav-icon {
+        opacity: 0.7;
+      }
+      .nav-item:hover .nav-icon {
+        opacity: 0.5;
+      }
+
+      .nav-icon svg {
+        width: 14px;
+        height: 14px;
+        stroke: var(--navy);
+        fill: none;
+        stroke-width: 1.5;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+      .nav-divider {
+        border: none;
+        border-top: 1px solid var(--border);
+        margin: 0.75rem 1.25rem 0;
+      }
+
+      /* ── MAIN ── */
+      main {
+        flex: 1;
+        padding: 2.5rem 3rem 5rem;
+        max-width: 1080px;
+      }
+
+      /* ── SECTION HEADER ── */
+      .section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+        margin-bottom: 2rem;
+        padding-bottom: 1.25rem;
+        border-bottom: 1px solid var(--border);
+      }
+
+      .section-eyebrow {
+        font-size: 0.63rem;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        color: var(--red);
+        margin-bottom: 0.4rem;
+        font-weight: 500;
+      }
+
+      .section-title {
+        font-family: "Playfair Display", serif;
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--navy);
+        line-height: 1.15;
+      }
+
+      .section-meta {
+        text-align: right;
+        font-size: 0.7rem;
+        color: var(--muted);
+        line-height: 1.7;
+      }
+      .section-meta strong {
+        display: block;
+        color: var(--text);
+        font-weight: 500;
+        font-family: "DM Mono", monospace;
+        font-size: 0.78rem;
+      }
+      .section-meta a {
+        color: var(--red);
+        text-decoration: none;
+        font-size: 0.67rem;
+      }
+      .section-meta a:hover {
+        color: var(--red-dim);
+        text-decoration: underline;
+      }
+
+      /* ── STAT CARDS ── */
+      .stat-row {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1px;
+        margin-bottom: 1.75rem;
+        background: var(--border);
+        border: 1px solid var(--border);
+        border-radius: 4px;
+        overflow: hidden;
+      }
+
+      .stat-card {
+        background: var(--bg);
+        padding: 1.4rem 1.5rem;
+        position: relative;
+        animation: fadeUp 0.3s ease both;
+      }
+
+      .stat-card:nth-child(2) {
+        animation-delay: 0.06s;
+      }
+      .stat-card:nth-child(3) {
+        animation-delay: 0.12s;
+      }
+
+      .stat-card.primary {
+        background: var(--navy);
+      }
+
+      .stat-card.primary .stat-label {
+        color: rgba(255, 255, 255, 0.5);
+      }
+      .stat-card.primary .stat-value {
+        color: #fff;
+      }
+      .stat-card.primary .stat-value .unit {
+        color: var(--red);
+      }
+      .stat-card.primary .stat-change {
+        color: #4cd98a;
+      }
+
+      .stat-card::after {
+        content: "";
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background: transparent;
+      }
+      .stat-card.primary::after {
+        background: var(--red);
+      }
+
+      .stat-label {
+        font-size: 0.65rem;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--muted);
+        margin-bottom: 0.55rem;
+        font-weight: 500;
+      }
+
+      .stat-value {
+        font-family: "DM Mono", monospace;
+        font-size: 2.6rem;
+        font-weight: 500;
+        color: var(--navy);
+        line-height: 1;
+        margin-bottom: 0.45rem;
+        letter-spacing: -0.02em;
+      }
+
+      .stat-value .unit {
+        font-size: 1.2rem;
+        color: var(--red);
+      }
+
+      .stat-change {
+        font-size: 0.7rem;
+        display: flex;
+        align-items: center;
+        gap: 0.3rem;
+      }
+      .chg-good {
+        color: var(--up);
+      }
+      .chg-bad {
+        color: var(--down);
+      }
+      .chg-nil {
+        color: var(--muted);
+      }
+
+      /* ── CHART CARD ── */
+      .chart-card {
+        background: var(--bg);
+        border: 1px solid var(--border);
+        border-radius: 4px;
+        padding: 1.75rem;
+        margin-bottom: 1.25rem;
+        animation: fadeUp 0.3s 0.18s ease both;
+      }
+
+      .chart-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 1.25rem;
+      }
+
+      .chart-title {
+        font-family: "Playfair Display", serif;
+        font-size: 1.05rem;
+        font-weight: 700;
+        color: var(--navy);
+        margin-bottom: 0.2rem;
+      }
+
+      .chart-sub {
+        font-size: 0.7rem;
+        color: var(--muted);
+      }
+
+      .period-btns {
+        display: flex;
+        gap: 0.25rem;
+      }
+
+      .pbtn {
+        font-size: 0.66rem;
+        padding: 0.28rem 0.55rem;
+        border: 1px solid var(--border-str);
+        border-radius: 2px;
+        background: transparent;
+        color: var(--muted);
+        cursor: pointer;
+        font-family: "DM Mono", monospace;
+        transition: all 0.12s;
+      }
+
+      .pbtn:hover {
+        border-color: var(--navy);
+        color: var(--navy);
+      }
+
+      .pbtn.active {
+        border-color: var(--red);
+        color: var(--red);
+        background: var(--red-glow);
+        font-weight: 500;
+      }
+
+      .chart-legend {
+        display: flex;
+        gap: 1.25rem;
+        margin-bottom: 1rem;
+      }
+      .legend-item {
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+        font-size: 0.7rem;
+        color: var(--muted);
+      }
+      .lline {
+        width: 16px;
+        height: 2px;
+        border-radius: 1px;
+        flex-shrink: 0;
+      }
+
+      /* ── INSIGHT ── */
+      .insight {
+        border-left: 3px solid var(--red);
+        padding: 1rem 1.25rem;
+        margin-bottom: 1.25rem;
+        background: var(--bg);
+        border: 1px solid var(--border);
+        border-left: 3px solid var(--red);
+        border-radius: 0 4px 4px 0;
+        animation: fadeUp 0.3s 0.26s ease both;
+      }
+
+      .insight-eyebrow {
+        font-size: 0.59rem;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        color: var(--red);
+        margin-bottom: 0.4rem;
+        font-weight: 500;
+      }
+
+      .insight p {
+        font-size: 0.875rem;
+        line-height: 1.8;
+        color: var(--text-mid);
+        font-style: italic;
+      }
+
+      .insight p strong {
+        color: var(--navy);
+        font-weight: 600;
+        font-style: normal;
+      }
+
+      /* ── TWO COL ── */
+      .two-col {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1.25rem;
+        margin-bottom: 1.25rem;
+      }
+      .chart-card.sm {
+        padding: 1.25rem;
+      }
+
+      /* ── HBARS ── */
+      .hbar-row {
+        display: flex;
+        flex-direction: column;
+        gap: 0.65rem;
+        margin-top: 0.75rem;
+      }
+      .hbar-item {
+        font-size: 0.7rem;
+      }
+      .hbar-meta {
+        display: flex;
+        justify-content: space-between;
+        color: var(--text-mid);
+        margin-bottom: 3px;
+      }
+      .hbar-meta span:last-child {
+        font-family: "DM Mono", monospace;
+        font-weight: 500;
+      }
+      .hbar-track {
+        background: var(--bg-ruled);
+        border-radius: 1px;
+        height: 4px;
+      }
+      .hbar-fill {
+        height: 100%;
+        border-radius: 1px;
+      }
+
+      /* ── SOURCE BAR ── */
+      .source-bar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0.65rem 1rem;
+        border: 1px solid var(--border);
+        border-radius: 4px;
+        font-size: 0.66rem;
+        color: var(--muted);
+        background: var(--bg);
+        animation: fadeUp 0.3s 0.32s ease both;
+      }
+
+      .source-bar a {
+        color: var(--red);
+        text-decoration: none;
+      }
+      .source-bar a:hover {
+        text-decoration: underline;
+      }
+
+      @keyframes fadeUp {
+        from {
+          opacity: 0;
+          transform: translateY(8px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      @media (max-width: 860px) {
+        nav {
+          display: none;
+        }
+        main {
+          padding: 1.5rem 1.25rem 3rem;
+        }
+        .stat-row {
+          grid-template-columns: 1fr 1fr;
+        }
+        .two-col {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- HEADER -->
+    <header>
+      <a class="logo" href="#">
+        <div class="logo-icon">
+          <span style="width: 5px; height: 9px"></span>
+          <span style="width: 5px; height: 14px"></span>
+          <span style="width: 5px; height: 20px"></span>
+        </div>
+        <div class="logo-wordmark">
+          AUSMETRICS
+          <small>AUSTRALIAN PUBLIC DATA · ANALYSIS</small>
+        </div>
+      </a>
+      <div class="header-right">
+        <div class="header-meta">
+          <span class="pulse"><span class="dot"></span>Live</span>
+          <span>Updated 15 min ago</span>
+        </div>
+      </div>
+    </header>
+
+    <div class="shell">
+      <!-- SIDEBAR -->
+      <nav>
+        <div class="nav-label">Economy</div>
+        <a class="nav-item active" href="#">
+          <span class="nav-icon"
+            ><svg viewBox="0 0 24 24">
+              <polyline points="22 7 13.5 15.5 8.5 10.5 2 17" />
+              <polyline points="16 7 22 7 22 13" /></svg
+          ></span>
+          Inflation
+        </a>
+        <a class="nav-item" href="#">
+          <span class="nav-icon"
+            ><svg viewBox="0 0 24 24">
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+              <circle cx="9" cy="7" r="4" />
+              <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+              <path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg
+          ></span>
+          Labour
+        </a>
+        <a class="nav-item" href="#">
+          <span class="nav-icon"
+            ><svg viewBox="0 0 24 24">
+              <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+              <polyline points="9 22 9 12 15 12 15 22" /></svg
+          ></span>
+          Housing
+        </a>
+
+        <div class="nav-label">Society</div>
+        <a class="nav-item" href="#">
+          <span class="nav-icon"
+            ><svg viewBox="0 0 24 24">
+              <path
+                d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.79 19.79 0 0 1 2.12 4.18 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"
+              /></svg
+          ></span>
+          Immigration
+        </a>
+
+        <div class="nav-label">Environment</div>
+        <a class="nav-item" href="#">
+          <span class="nav-icon"
+            ><svg viewBox="0 0 24 24">
+              <path d="M2 22c1.25-1.25 2.208-2.4 2.954-3.469C7.99 14.337 8 10 8 10s4 0 8 2c0 0-.5 4-4 6" />
+              <path d="M22 2s-8.208 1.04-11 7c-.667 1.42-.993 2.948-1 4.5 0 0 4.5-1.5 7-5.5" /></svg
+          ></span>
+          Climate
+        </a>
+
+        <hr class="nav-divider" />
+        <div class="nav-label">Reference</div>
+        <a class="nav-item" href="#">
+          <span class="nav-icon"
+            ><svg viewBox="0 0 24 24">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+              <polyline points="14 2 14 8 20 8" />
+              <line x1="16" y1="13" x2="8" y2="13" />
+              <line x1="16" y1="17" x2="8" y2="17" />
+              <polyline points="10 9 9 9 8 9" /></svg
+          ></span>
+          Methodology
+        </a>
+        <a class="nav-item" href="#">
+          <span class="nav-icon"
+            ><svg viewBox="0 0 24 24">
+              <ellipse cx="12" cy="5" rx="9" ry="3" />
+              <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3" />
+              <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5" /></svg
+          ></span>
+          Data sources
+        </a>
+      </nav>
+
+      <!-- MAIN -->
+      <main>
+        <div class="section-header">
+          <div>
+            <div class="section-eyebrow">Economy · Prices</div>
+            <h1 class="section-title">Inflation &amp; Monetary Policy</h1>
+          </div>
+          <div class="section-meta">
+            <strong>Q1 2025</strong>
+            ABS 6401.0 · RBA Cash Rate<br />
+            <a href="#">↗ View source data</a>
+          </div>
+        </div>
+
+        <!-- STAT CARDS -->
+        <div class="stat-row">
+          <div class="stat-card primary">
+            <div class="stat-label">CPI Annual Change</div>
+            <div class="stat-value">2.4<span class="unit">%</span></div>
+            <div class="stat-change chg-good">↓ 0.4pp from prior quarter</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Cash Rate Target</div>
+            <div class="stat-value">4.1<span class="unit">%</span></div>
+            <div class="stat-change chg-nil">— Unchanged · Feb 2025</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Trimmed Mean CPI</div>
+            <div class="stat-value">3.2<span class="unit">%</span></div>
+            <div class="stat-change chg-good">↓ Within RBA 2–3% band</div>
+          </div>
+        </div>
+
+        <!-- MAIN CHART -->
+        <div class="chart-card">
+          <div class="chart-header">
+            <div>
+              <div class="chart-title">CPI vs Cash Rate Target</div>
+              <div class="chart-sub">Annual change (%) · Quarterly · 2015–2025</div>
+            </div>
+            <div class="period-btns">
+              <button class="pbtn">2Y</button>
+              <button class="pbtn">5Y</button>
+              <button class="pbtn active">10Y</button>
+              <button class="pbtn">All</button>
+            </div>
+          </div>
+
+          <div class="chart-legend">
+            <div class="legend-item">
+              <div class="lline" style="background: var(--red)"></div>
+              CPI Annual Change
+            </div>
+            <div class="legend-item">
+              <div class="lline" style="background: var(--accent2)"></div>
+              Cash Rate Target
+            </div>
+            <div class="legend-item">
+              <div style="width: 16px; height: 0; border-top: 1px dashed #aaa; flex-shrink: 0"></div>
+              &nbsp;RBA Target Band (2–3%)
+            </div>
+          </div>
+
+          <svg width="100%" height="240" viewBox="0 0 820 220" preserveAspectRatio="none" style="overflow: visible">
+            <!-- Grid -->
+            <line x1="40" y1="20" x2="820" y2="20" stroke="#e8eaf2" stroke-width="1" />
+            <line x1="40" y1="60" x2="820" y2="60" stroke="#e8eaf2" stroke-width="1" />
+            <line x1="40" y1="100" x2="820" y2="100" stroke="#e8eaf2" stroke-width="1" />
+            <line x1="40" y1="140" x2="820" y2="140" stroke="#e8eaf2" stroke-width="1" />
+            <line x1="40" y1="175" x2="820" y2="175" stroke="#e8eaf2" stroke-width="1" />
+
+            <!-- RBA target band -->
+            <rect x="40" y="132" width="780" height="26" fill="rgba(0,27,105,0.04)" />
+            <line x1="40" y1="132" x2="820" y2="132" stroke="#c8ccdf" stroke-width="1" stroke-dasharray="4,3" />
+            <line x1="40" y1="158" x2="820" y2="158" stroke="#c8ccdf" stroke-width="1" stroke-dasharray="4,3" />
+            <text x="825" y="136" fill="#aaa" font-size="8" font-family="DM Mono,monospace">3%</text>
+            <text x="825" y="162" fill="#aaa" font-size="8" font-family="DM Mono,monospace">2%</text>
+
+            <!-- Y labels -->
+            <text x="35" y="24" fill="#7a8db8" font-size="9" font-family="DM Mono,monospace" text-anchor="end">8%</text>
+            <text x="35" y="64" fill="#7a8db8" font-size="9" font-family="DM Mono,monospace" text-anchor="end">6%</text>
+            <text x="35" y="104" fill="#7a8db8" font-size="9" font-family="DM Mono,monospace" text-anchor="end">4%</text>
+            <text x="35" y="144" fill="#7a8db8" font-size="9" font-family="DM Mono,monospace" text-anchor="end">2%</text>
+            <text x="35" y="179" fill="#7a8db8" font-size="9" font-family="DM Mono,monospace" text-anchor="end">0%</text>
+
+            <!-- Cash rate (blue) -->
+            <polyline
+              points="40,170 120,168 200,164 280,130 360,95 440,82 520,78 600,80 640,100 720,115 820,118"
+              fill="none"
+              stroke="#0a5eb8"
+              stroke-width="2"
+              stroke-linejoin="round"
+            />
+
+            <!-- CPI area -->
+            <defs>
+              <linearGradient id="redFadeL" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#E50027" stop-opacity="0.12" />
+                <stop offset="100%" stop-color="#E50027" stop-opacity="0" />
+              </linearGradient>
+            </defs>
+            <polygon points="40,158 120,152 200,140 280,102 360,34 440,22 520,36 560,60 600,100 680,128 820,132 820,210 40,210" fill="url(#redFadeL)" />
+
+            <!-- CPI line -->
+            <polyline
+              points="40,158 120,152 200,140 280,102 360,34 440,22 520,36 560,60 600,100 680,128 820,132"
+              fill="none"
+              stroke="#E50027"
+              stroke-width="2.5"
+              stroke-linejoin="round"
+            />
+
+            <!-- Peak annotation -->
+            <line x1="440" y1="22" x2="440" y2="8" stroke="#E50027" stroke-width="1" stroke-dasharray="3,2" />
+            <text x="444" y="7" fill="#E50027" font-size="9" font-family="DM Mono,monospace">Peak 7.8% · Dec 2022</text>
+
+            <!-- X labels -->
+            <text x="40" y="210" fill="#7a8db8" font-size="9" font-family="DM Mono,monospace">2015</text>
+            <text x="120" y="210" fill="#7a8db8" font-size="9" font-family="DM Mono,monospace">2016</text>
+            <text x="200" y="210" fill="#7a8db8" font-size="9" font-family="DM Mono,monospace">2017</text>
+            <text x="280" y="210" fill="#7a8db8" font-size="9" font-family="DM Mono,monospace">2018</text>
+            <text x="360" y="210" fill="#7a8db8" font-size="9" font-family="DM Mono,monospace">2019</text>
+            <text x="440" y="210" fill="#7a8db8" font-size="9" font-family="DM Mono,monospace">2020</text>
+            <text x="520" y="210" fill="#7a8db8" font-size="9" font-family="DM Mono,monospace">2021</text>
+            <text x="600" y="210" fill="#7a8db8" font-size="9" font-family="DM Mono,monospace">2022</text>
+            <text x="680" y="210" fill="#7a8db8" font-size="9" font-family="DM Mono,monospace">2023</text>
+            <text x="755" y="210" fill="#7a8db8" font-size="9" font-family="DM Mono,monospace">2024–25</text>
+          </svg>
+        </div>
+
+        <!-- INSIGHT -->
+        <div class="insight">
+          <div class="insight-eyebrow">Analysis</div>
+          <p>
+            Inflation peaked at <strong>7.8%</strong> in December 2022 — the highest level since 1990 — driven by post-pandemic supply disruptions and strong domestic demand. The
+            RBA responded with <strong>13 consecutive rate increases</strong>, lifting the cash rate from a historic low of 0.1% to 4.35%. Annual CPI has since eased to
+            <strong>2.4%</strong>, returning within the target band for the first time in three years. Real wages are beginning to recover as wage growth now outpaces inflation.
+          </p>
+        </div>
+
+        <!-- SECONDARY CHARTS -->
+        <div class="two-col">
+          <div class="chart-card sm">
+            <div class="chart-header">
+              <div>
+                <div class="chart-title" style="font-size: 0.92rem">CPI by Category</div>
+                <div class="chart-sub">Annual change · Dec 2024</div>
+              </div>
+            </div>
+            <div class="hbar-row">
+              <div class="hbar-item">
+                <div class="hbar-meta"><span>Insurance &amp; financial services</span><span style="color: var(--red)">+6.8%</span></div>
+                <div class="hbar-track"><div class="hbar-fill" style="width: 87%; background: var(--red)"></div></div>
+              </div>
+              <div class="hbar-item">
+                <div class="hbar-meta"><span>Housing</span><span style="color: var(--red)">+5.2%</span></div>
+                <div class="hbar-track"><div class="hbar-fill" style="width: 67%; background: var(--red)"></div></div>
+              </div>
+              <div class="hbar-item">
+                <div class="hbar-meta"><span>Food &amp; non-alcoholic beverages</span><span style="color: var(--red)">+3.8%</span></div>
+                <div class="hbar-track"><div class="hbar-fill" style="width: 49%; background: var(--red)"></div></div>
+              </div>
+              <div class="hbar-item">
+                <div class="hbar-meta"><span>Transport</span><span style="color: var(--muted)">+1.1%</span></div>
+                <div class="hbar-track"><div class="hbar-fill" style="width: 14%; background: var(--muted)"></div></div>
+              </div>
+              <div class="hbar-item">
+                <div class="hbar-meta"><span>Clothing &amp; footwear</span><span style="color: var(--up)">−0.7%</span></div>
+                <div class="hbar-track"><div class="hbar-fill" style="width: 9%; background: var(--up)"></div></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="chart-card sm">
+            <div class="chart-header">
+              <div>
+                <div class="chart-title" style="font-size: 0.92rem">Real Wages Growth</div>
+                <div class="chart-sub">WPI vs CPI · Annual change</div>
+              </div>
+            </div>
+            <div class="chart-legend" style="margin-bottom: 0.75rem">
+              <div class="legend-item">
+                <div class="lline" style="background: var(--up)"></div>
+                Wage Price Index
+              </div>
+              <div class="legend-item">
+                <div class="lline" style="background: var(--red)"></div>
+                CPI
+              </div>
+            </div>
+            <svg width="100%" height="130" viewBox="0 0 400 120" preserveAspectRatio="none" style="overflow: visible">
+              <line x1="0" y1="60" x2="400" y2="60" stroke="#e8eaf2" stroke-width="1" />
+              <line x1="0" y1="30" x2="400" y2="30" stroke="#e8eaf2" stroke-width="1" />
+              <line x1="0" y1="90" x2="400" y2="90" stroke="#e8eaf2" stroke-width="1" />
+              <polyline points="0,72 80,68 160,66 240,62 320,56 400,52" fill="none" stroke="#007a3d" stroke-width="2" stroke-linejoin="round" />
+              <polyline points="0,68 80,52 160,34 240,28 320,70 400,76" fill="none" stroke="#E50027" stroke-width="2" stroke-linejoin="round" />
+              <line x1="0" y1="60" x2="400" y2="60" stroke="#c8ccdf" stroke-width="1" stroke-dasharray="3,3" />
+              <text x="0" y="115" fill="#7a8db8" font-size="8" font-family="DM Mono,monospace">2020</text>
+              <text x="88" y="115" fill="#7a8db8" font-size="8" font-family="DM Mono,monospace">2021</text>
+              <text x="188" y="115" fill="#7a8db8" font-size="8" font-family="DM Mono,monospace">2022</text>
+              <text x="288" y="115" fill="#7a8db8" font-size="8" font-family="DM Mono,monospace">2023</text>
+              <text x="368" y="115" fill="#7a8db8" font-size="8" font-family="DM Mono,monospace">2024</text>
+              <text x="-2" y="64" fill="#7a8db8" font-size="8" font-family="DM Mono,monospace" text-anchor="end">0%</text>
+            </svg>
+          </div>
+        </div>
+
+        <!-- SOURCE BAR -->
+        <div class="source-bar">
+          <span>Sources: <a href="#">ABS 6401.0 Consumer Price Index</a> · <a href="#">RBA Cash Rate Target</a> · <a href="#">ABS 6345.0 Wage Price Index</a></span>
+          <span>ausmetrics.com.au · <a href="#">Cite this page</a></span>
+        </div>
+      </main>
+    </div>
+  </body>
+</html>
