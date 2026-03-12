@@ -74,7 +74,7 @@ async fn main() -> std::io::Result<()> {
                                 <MetaTags/>
                                 <script src="assets/echarts.min.js" />
                             </head>
-                            <body class="flex flex-col w-screen h-screen bg-neutral-200">
+                            <body class="flex flex-col w-screen h-screen dark:bg-[#18191b] bg-white">
                                 <App/>
                             </body>
                         </html>

@@ -1,17 +1,26 @@
-use std::{fs::File, io::BufReader, path::PathBuf, str::FromStr};
+use std::{fs::File, future::Future, io::BufReader, path::PathBuf, str::FromStr, thread::spawn};
 
-use chrono::Local;
+use actix_web::rt::task::spawn_blocking;
+use chrono::{Datelike, Local, Timelike};
 use jsonpath_rust::query::js_path_vals;
-use leptos::{html::Div, prelude::*, server_fn::codec::Json, task::spawn_local};
+use leptos::{
+    html::Div,
+    prelude::*,
+    server_fn::codec::{Json, JsonEncoding, Post},
+    task::spawn_local,
+};
 
-#[cfg(target_arch = "wasm32")]
+// #[cfg(target_arch = "wasm32")]
 use charming::{
     component::{Axis, Legend, Title},
     datatype::{CompositeValue, NumericValue},
     element::{AxisType, LabelAlign, TextAlign},
-    WasmRenderer,
 };
 
+#[cfg(feature = "hydrate")]
+use charming::renderer::WasmRenderer;
+
+use jsonpath_rust::query::js_path_vals;
 use log::debug;
 use serde::{Deserialize, Serialize};
 use serde_json::{from_reader, Value};
@@ -22,6 +31,24 @@ pub struct Data {
     y: f64,
     ir: f64,
     date: String,
+}
+
+#[server]
+async fn fetch(url: PathBuf, body: String) -> Result<Value, ServerFnError> {
+    let client = reqwest::Client::new();
+    let res = client
+        .post(url.to_str().unwrap())
+        .body(body)
+        .send()
+        .await
+        .map_err(|e| ServerFnError::new(e.to_string()))?;
+
+    let json = res
+        .json::<Value>()
+        .await
+        .map_err(|e| ServerFnError::new(e.to_string()))?;
+
+    Ok(json)
 }
 
 #[server]
@@ -132,55 +159,63 @@ pub fn LineChart() -> impl IntoView {
 
     let chart_ref = NodeRef::<Div>::new();
     // #[cfg(target_arch = "wasm32")]
-    let data = Resource::new(
-        || (),
-        |_| async move {
-            load_json_file(PathBuf::from_str("graphql-server/static/CPI_simple.json").unwrap())
-                .await
-        },
-    );
+    // let data = Resource::new(
+    //     || (),
+    //     |_| async move {
+    //         load_json_file(PathBuf::from_str("graphql-server/static/CPI_simple.json").unwrap())
+    //             .await
+    //     },
+    // );
+    let mut url = PathBuf::from_str(
+        std::env::var("GRAPHQL_SERVER_URL")
+            .unwrap_or("http://127.0.0.1:5432".to_string())
+            .as_str(),
+    )
+    .unwrap_or_default();
 
-    // #[cfg(feature = "hydrate")]
-    let observations = Signal::derive(move || {
-        if let Some(data) = data.get() {
-            let res = match data {
-                Ok(ref value) => extract_observations(value),
-                Err(err) => {
-                    debug!("Error loading JSON: {err:?}");
-                    Vec::new()
-                }
-            };
-            Some(res)
-        } else {
-            None
-        }
-    });
+    url.push("query");
+    let body = String::from("{ consumerPriceIndex(start: {year: 2024, month: 1}, end: {year: 2026, month: 3}) cashRateTarget(start: {year: 2024, month: 1}, end: {year: 2026, month: 3})}");
 
-    #[cfg(target_arch = "wasm32")]
+    #[cfg(feature = "hydrate")]
+    let data = Resource::new(|| (), move |_| fetch(url.clone(), body.clone()));
+
+    #[cfg(feature = "hydrate")]
     Effect::new(move || {
-        use std::char::CharTryFromError;
-
+        use charming::component::Grid;
         use leptos::logging;
+        use serde_json::Number;
 
         logging::log!("Effect");
 
+        let cf = chart_ref.get();
+        leptos::logging::log!("cf: {:#?}", cf);
+
+        let cpi_series = js_path_vals("$.data.consumerPriceIndex.*.*", &data.get());
+        let crt_series = js_path_vals("$.data.cashRateTarget.*.*", &data.get());
+        let xs = js_path_vals("$.data.consumerPriceIndex.*", &data.get());
+
         type EChart = charming::Chart;
 
-        let data = observations.get().unwrap();
+        let Some(data) = observations.get() else {
+            return;
+        };
         leptos::logging::log!("data: {data:#?}");
         let chart = EChart::new()
             .title(
                 Title::new()
                     .text("Consumer Price Index (CPI) / Cash Rate Target (CRT)")
-                    .text_align(TextAlign::Center),
+                    .text_align(TextAlign::Center)
+                    .top(CompositeValue::String(String::from("2%")))
+                    .left(CompositeValue::String(String::from("50%"))),
             )
+            .grid(Grid::new())
             .series(charming::series::Series::Line(
-                charming::series::Line::new().data(data.iter().map(|ob| ob.y).collect()),
+                charming::series::Line::new().data(cpi_series),
             ))
             .series(charming::series::Series::Line(
-                charming::series::Line::new().data(data.iter().map(|ob| ob.ir).collect()),
+                charming::series::Line::new().data(crt_series),
             ))
-            .x_axis(Axis::new().data(data.into_iter().map(|d| d.date).collect::<Vec<String>>()))
+            .x_axis(Axis::new().data(xs))
             .y_axis(Axis::new().type_(AxisType::Value))
             .legend(
                 Legend::new()
@@ -189,28 +224,28 @@ pub fn LineChart() -> impl IntoView {
                     .show(true),
             );
 
-        let cf = move || chart_ref.get();
-        leptos::logging::log!("cf: {:#?}", cf());
-
-        if let Some(el) = cf() {
+        if let Some(el) = cf {
             logging::log!("el: {el:#?}");
             let width = el.client_width();
             let height = el.client_height();
 
             logging::log!("width: {width} height: {height}");
+            // #[cfg(feature = "hydrate")]
+            // {
             let renderer = WasmRenderer::new(width as u32, (2. / 3. * width as f32) as u32);
             renderer.render("chart", &chart).unwrap();
+            // }
         }
     });
 
     view! {
 
         <div class="w-2/3 h-fit flex-col  m-auto  ">
-          <div node_ref = chart_ref  class="[&>div]:w-full [&>div]:h-full bg-white font-serif border-2 border-solid border-black" id="chart" ></div>
+          <div node_ref=chart_ref  class="w-full h-full [&>div]:w-full [&>div]:h-full font-serif border-2 border-solid border-black [&_*]:dark:fill-white [&>div]:dark:text-white" id="chart" ></div>
           <p class="w-full text-right">"Sources: ABS/RBA"</p>
         </div>
 
-    };
+    }
 }
 
 // The most useful combinations of economic measures generally blend

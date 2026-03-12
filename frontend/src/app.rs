@@ -42,7 +42,7 @@ fn HomePage() -> impl IntoView {
     view! {
       <div>
         <Header />
-      <div class={"flex-col space-y-4 justify-start items-start w-2/3 m-auto h-full [&_*]:font-sans [&_*]:text-[#001B69] [&_text]:fill-[#001B69] [&_*]:text-lg"}>
+      <div class={"flex-col py-8 space-y-4 justify-start items-start w-2/3 m-auto h-full [&_*]:font-sans [&_*]:text-[#001B69] [&_text]:fill-[#001B69] [&_*]:text-lg"}>
         <Transition fallback=move || view! { <p>"Loading..."</p> }>
         <LineChart />
         </Transition>

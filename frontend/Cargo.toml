@@ -32,11 +32,14 @@ icons = { version = "0.18.0", features = ["leptos"] }
 leptos_ui = "0.3.20"
 leptix_primitives = "0.2.3"
 charming = "0.6.0"
+leptos-use = "0.18.3"
+
+
 
 
 [features]
 csr = ["leptos/csr"]
-hydrate = ["leptos/hydrate", "charming/js-sys", "charming/wasm", "charming/web-sys", "charming/wasm-bindgen"]
+hydrate = ["leptos/hydrate", "charming/js-sys", "charming/wasm", "charming/web-sys", "charming/wasm-bindgen", "leptos-use/use_color_mode"]
 ssr = [
   "dep:actix-files",
   "dep:actix-web",
