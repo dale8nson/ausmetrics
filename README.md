@@ -1,72 +1,136 @@
-<picture>
-    <source srcset="https://raw.githubusercontent.com/leptos-rs/leptos/main/docs/logos/Leptos_logo_Solid_White.svg" media="(prefers-color-scheme: dark)">
-    <img src="https://raw.githubusercontent.com/leptos-rs/leptos/main/docs/logos/Leptos_logo_RGB.svg" alt="Leptos Logo">
-</picture>
+# ausmetrics
 
-# Leptos Starter Template
+A full-stack Australian public policy data platform — aggregating economic, environmental, demographic, and social indicators from government and independent sources, with a GraphQL API and a Leptos/WebAssembly frontend.
 
-This is a template for use with the [Leptos](https://github.com/leptos-rs/leptos) web framework and the [cargo-leptos](https://github.com/akesson/cargo-leptos) tool.
+> **Status: Work in progress.** The GraphQL server fetches live data from the ABS SDMX REST API and RBA CSV data; the frontend renders interactive charts using ECharts via the `charming` crate. Active development is ongoing.
 
-## Creating your template repo
+## Vision
 
-If you don't have `cargo-leptos` installed you can install it with
+`ausmetrics` aims to be a single place to explore the data behind Australia's most pressing public policy questions — cost of living, housing, climate, immigration, fiscal policy, and more. Data is drawn from both government APIs and independent research institutions, prioritising sources that are neutral, methodologically rigorous, and publicly accessible.
 
-`cargo install cargo-leptos --locked`
+The longer-term roadmap includes an MCP server integration, so that the dataset can be queried directly by AI assistants.
 
-Then run
+## Data
 
-`cargo leptos new --git leptos-rs/start-actix`
+### Currently implemented
 
-to generate a new project template (you will be prompted to enter a project name).
+| Metric | Source | Notes |
+|--------|--------|-------|
+| CPI (Consumer Price Index) | ABS SDMX REST API | Quarterly |
+| Cash Rate Target | RBA (CSV) | Historical series |
+| Mean Dwelling Price by State | ABS SDMX REST API | Per state: NSW, VIC, QLD, SA, WA, TAS, NT |
+| Gross Domestic Product | ABS SDMX REST API | Quarterly |
 
-`cd {projectname}`
+### Planned
 
-to go to your newly created project.
+| Domain | Metrics | Sources |
+|--------|---------|---------|
+| **Housing** | Rental vacancy rates, social housing waitlists, homelessness estimates, affordability ratios | ABS, AIHW, AHURI, CoreLogic |
+| **Environment** | Emissions by sector, renewable energy share, temperature/rainfall anomalies, land clearing | Clean Energy Regulator, BOM, CSIRO, Our World in Data |
+| **Immigration** | Net overseas migration, visa grants by category, population growth by state | ABS, Dept. of Home Affairs, OECD |
+| **Finance & fiscal policy** | Federal budget balance, government debt, tax revenue, welfare expenditure | Treasury, APRA, IMF, Grattan Institute |
+| **Labour** | Unemployment and underemployment, wages growth, industry employment share | ABS, Melbourne Institute (HILDA Survey) |
+| **Health & social** | Bulk billing rates, hospital wait times, aged care, Closing the Gap indicators | AIHW, Grattan Institute |
 
-Of course, you should explore around the project structure, but the best place to start with your application code is in `src/app.rs`.
+#### Data source notes
 
-## Running your project
+`ausmetrics` draws from two categories of source:
 
-`cargo leptos watch`  
-By default, you can access your local project at `http://localhost:3000`
+**Government & statutory bodies** — ABS, RBA, APRA, Treasury, Bureau of Meteorology, Clean Energy Regulator, AIHW (Australian Institute of Health and Welfare), and the Department of Home Affairs. These provide the primary time-series datasets via REST and SDMX APIs.
 
-## Installing Additional Tools
+**Independent research institutions** — selected for methodological rigour and editorial independence:
 
-By default, `cargo-leptos` uses `nightly` Rust, `cargo-generate`, and `sass`. If you run into any trouble, you may need to install one or more of these tools.
+- [Grattan Institute](https://grattan.edu.au) — Australia's leading independent policy think tank, covering housing, health, energy, and fiscal policy
+- [AHURI](https://www.ahuri.edu.au) (Australian Housing and Urban Research Institute) — independent housing and urban research
+- [Melbourne Institute / HILDA Survey](https://melbourneinstitute.unimelb.edu.au/hilda) — longitudinal household income, labour, and welfare data (University of Melbourne)
+- [CSIRO](https://www.csiro.au) — national science agency; independent on climate and environmental data
+- [Our World in Data](https://ourworldindata.org) — open, peer-reviewed global indicators with strong Australia coverage across most domains
+- [OECD](https://data.oecd.org) — international comparative data for Australia across economics, immigration, health, and education
+- [IMF](https://www.imf.org/en/Data) — macroeconomic and fiscal data for cross-checking national accounts
 
-1. `rustup toolchain install nightly --allow-downgrade` - make sure you have Rust nightly
-2. `rustup target add wasm32-unknown-unknown` - add the ability to compile Rust to WebAssembly
-3. `cargo install cargo-generate` - install `cargo-generate` binary (should be installed automatically in future)
-4. `npm install -g sass` - install `dart-sass` (should be optional in future)
+## Architecture
 
-## Executing a Server on a Remote Machine Without the Toolchain
-After running a `cargo leptos build --release` the minimum files needed are:
-
-1. The server binary located in `target/server/release`
-2. The `site` directory and all files within located in `target/site`
-
-Copy these files to your remote server. The directory structure should be:
-```text
-leptos_start
-site/
 ```
-Set the following environment variables (updating for your project as needed):
-```sh
-export LEPTOS_OUTPUT_NAME="leptos_start"
-export LEPTOS_SITE_ROOT="site"
-export LEPTOS_SITE_PKG_DIR="pkg"
-export LEPTOS_SITE_ADDR="127.0.0.1:3000"
-export LEPTOS_RELOAD_PORT="3001"
+  ┌──────────────────────────────────────────┐
+  │  ABS SDMX REST API · RBA · Data.gov.au   │
+  │  Clean Energy Regulator · Home Affairs   │
+  └──────────────────┬───────────────────────┘
+                     │ reqwest (async HTTP)
+  ┌──────────────────▼───────────────────────┐
+  │            graphql-server                │
+  │         (actix-web + async-graphql)      │
+  └──────────┬───────────────────────────────┘
+             │ GraphQL over HTTP
+      ┌──────┴──────────────┐
+      │                     │
+  ┌───▼──────────┐   ┌──────▼──────────────┐
+  │   frontend   │   │   MCP server        │
+  │  (Leptos 0.8 │   │   (planned)         │
+  │   + WASM)    │   │                     │
+  └──────────────┘   └─────────────────────┘
 ```
-Finally, run the server binary.
 
-## Notes about CSR and Trunk:
-Although it is not recommended, you can also run your project without server integration using the feature `csr` and `trunk serve`:
+## Workspace layout
 
-`trunk serve --open --features csr`
+```
+ausmetrics/
+├── graphql-server/       # Actix-web GraphQL server
+│   └── src/
+│       ├── main.rs       # Server entry point, GraphQL endpoint at /
+│       ├── schema.rs     # Query resolvers — ABS/RBA data fetching
+│       ├── graph.rs      # Graph utilities
+│       ├── param.rs      # Query parameter helpers
+│       └── error.rs      # Error types
+└── frontend/             # Leptos full-stack app
+    └── src/
+        └── components/
+            └── line_chart.rs   # CPI vs Cash Rate line chart (ECharts)
+```
 
-This may be useful for integrating external tools which require a static site, e.g. `tauri`.
+## Running
 
-## Licensing
+### GraphQL server
 
-This template itself is released under the Unlicense. You should replace the LICENSE for your own application with an appropriate license if you plan to release it publicly.
+Create a `.env.local` file in `graphql-server/`:
+```
+GRAPHQL_ADDR=127.0.0.1
+PORT=4000
+```
+
+```bash
+cd graphql-server
+cargo run
+```
+
+GraphiQL playground: `http://127.0.0.1:4000/`
+
+### Frontend
+
+Requires [cargo-leptos](https://github.com/leptos-rs/cargo-leptos):
+
+```bash
+cargo install cargo-leptos
+cd frontend
+cargo leptos watch
+```
+
+Frontend: `http://127.0.0.1:3010/`
+
+## Example query
+
+```graphql
+{
+  consumerPriceIndex(start: {year: 2025, month: 1}, end: {year: 2025, month: 12})
+  cashRateTarget(start: {year: 2025, month: 1}, end: {year: 2025, month: 12})
+}
+```
+
+## Built with
+
+- [`actix-web`](https://github.com/actix/actix-web) — HTTP server
+- [`async-graphql`](https://github.com/async-graphql/async-graphql) — GraphQL (with dynamic schema support)
+- [`leptos`](https://github.com/leptos-rs/leptos) 0.8 — reactive full-stack WASM framework
+- [`charming`](https://github.com/yuankunzhang/charming) — Apache ECharts bindings for Rust
+- [`reqwest`](https://github.com/seanmonstar/reqwest) — async HTTP client for data fetching
+- [`jsonpath-rust`](https://github.com/besok/jsonpath-rust) — JSONPath extraction from ABS SDMX responses
+- Tailwind CSS — utility-first styling
