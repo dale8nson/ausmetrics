@@ -4,10 +4,16 @@ pub(crate) mod param;
 mod schema;
 use std::{path::PathBuf, sync::Arc};
 
-use actix_web::{App, HttpResponse, HttpServer, get, guard, http::StatusCode, post, web};
+use crate::schema::Query;
+use actix_web::{
+    App, HttpResponse, HttpServer, get, guard,
+    http::StatusCode,
+    post,
+    web::{self, Json},
+};
 use async_graphql::{
     EmptyMutation, EmptySubscription, Name, ObjectType, OutputType, Schema, Value,
-    dynamic::{Field, TypeRef, indexmap::IndexMap},
+    dynamic::{Field, Subscription, TypeRef, indexmap::IndexMap},
     http::GraphiQLSource,
     parser::parse_schema,
 };
@@ -20,12 +26,15 @@ use log::LevelFilter;
 use reqwest::Response;
 use serde::{Deserializer, de::Visitor};
 
-use crate::schema::get_schema;
+// use crate::schema::get_schema;
 
-// #[post("/")]
-// async fn gql_req(req: GraphQLRequest, schema: web::Data<Schema>) -> web::Json<GraphQLResponse> {
-//     web::Json(schema.execute(req.into_inner()).await.into())
-// }
+#[post("/graphql")]
+async fn query(
+    req: GraphQLRequest,
+    schema: web::Data<Schema<Query, EmptyMutation, EmptySubscription>>,
+) -> Json<Value> {
+    web::Json(schema.execute(req.into_inner()).await.data)
+}
 
 async fn graphiql_service() -> HttpResponse {
     HttpResponse::build(StatusCode::OK).body(
@@ -54,7 +63,9 @@ async fn main() -> Result<(), GQLError> {
 
     let client = Arc::new(reqwest::Client::new());
 
-    let schema = get_schema().await;
+    // let schema = get_schema().await;
+
+    let schema = Schema::new(Query, EmptyMutation, EmptySubscription);
 
     HttpServer::new(move || {
         let schema_clone = schema.clone();
@@ -69,6 +80,7 @@ async fn main() -> Result<(), GQLError> {
                     .to(GraphQL::new(schema_clone)),
             )
             .service(web::resource("/").guard(guard::Get()).to(graphiql_service))
+            .service(query)
     })
     .on_connect(move |_conn, _ext| {
         println!("now listening at http://{} on port {}", addr(), port);
