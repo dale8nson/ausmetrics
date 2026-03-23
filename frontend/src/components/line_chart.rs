@@ -1,6 +1,7 @@
-use std::{fs::File, future::Future, io::BufReader, path::PathBuf, str::FromStr, thread::spawn};
+use std::{
+    fs::File, future::Future, io::BufReader, path::PathBuf, str::FromStr, sync::Arc, thread::spawn,
+};
 
-use actix_web::rt::task::spawn_blocking;
 use chrono::{Datelike, Local, Timelike};
 use jsonpath_rust::query::js_path_vals;
 use leptos::{
@@ -20,10 +21,11 @@ use charming::{
 #[cfg(feature = "hydrate")]
 use charming::renderer::WasmRenderer;
 
-use jsonpath_rust::query::js_path_vals;
 use log::debug;
+// #[cfg(feature = "hydrate")]
+use reqwest::Client;
 use serde::{Deserialize, Serialize};
-use serde_json::{from_reader, Value};
+use serde_json::{from_reader, to_value, Value};
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct Data {
@@ -35,10 +37,11 @@ pub struct Data {
 
 #[server]
 async fn fetch(url: PathBuf, body: String) -> Result<Value, ServerFnError> {
-    let client = reqwest::Client::new();
+    let client = Client::new();
     let res = client
-        .post(url.to_str().unwrap())
-        .body(body)
+        .post(url.to_str().unwrap().to_string())
+        .header("content-type", "application/json")
+        .body(body.as_str().to_string())
         .send()
         .await
         .map_err(|e| ServerFnError::new(e.to_string()))?;
@@ -46,9 +49,11 @@ async fn fetch(url: PathBuf, body: String) -> Result<Value, ServerFnError> {
     let json = res
         .json::<Value>()
         .await
-        .map_err(|e| ServerFnError::new(e.to_string()))?;
+        .map_err(|e| ServerFnError::new(e.to_string()));
 
-    Ok(json)
+    leptos::logging::log!("json: {json:#?}");
+
+    json
 }
 
 #[server]
@@ -71,101 +76,90 @@ async fn load_json_file(path: PathBuf) -> Result<Value, ServerFnError> {
     }
 }
 
-pub fn extract_observations(binding: &Value) -> Vec<Data> {
-    let arr = js_path_vals("$.data.dataSets[0].series..observations", binding).unwrap_or_default();
+// pub fn extract_observations(binding: &Value) -> Vec<Data> {
+//     let arr = js_path_vals("$.data.dataSets[0].series..observations", binding).unwrap_or_default();
 
-    let ir = vec![
-        4.10, 4.01, 3.85, 3.85, 3.70, 3.60, 3.60, 3.60, 3.60, 3.60, 3.83,
-    ];
+//     // debug!("arr: {arr:#?}");
+//     //
+//     if arr.is_empty() {
+//         return Vec::<Data>::new();
+//     }
 
-    // debug!("arr: {arr:#?}");
-    //
-    if arr.is_empty() {
-        return Vec::<Data>::new();
-    }
+//     let Value::Object(map) = arr[0].clone() else {
+//         return Vec::new();
+//     };
 
-    let Value::Object(map) = arr[0].clone() else {
-        return Vec::new();
-    };
+//     let data_points = map
+//         .iter()
+//         .zip(ir.into_iter().enumerate())
+//         .filter_map(|((k, v), (_idx, r))| {
+//             let x = f64::from_str(k).ok()?;
+//             let Value::Array(a) = v else {
+//                 return None;
+//             };
+//             let Value::Number(num) = &a[0] else {
+//                 return None;
+//             };
+//             let y = num.as_f64()?;
+//             Some((x, y, r))
+//         })
+//         .collect::<Vec<(f64, f64, f64)>>();
 
-    let data_points = map
-        .iter()
-        .zip(ir.into_iter().enumerate())
-        .filter_map(|((k, v), (_idx, r))| {
-            let x = f64::from_str(k).ok()?;
-            let Value::Array(a) = v else {
-                return None;
-            };
-            let Value::Number(num) = &a[0] else {
-                return None;
-            };
-            let y = num.as_f64()?;
-            Some((x, y, r))
-        })
-        .collect::<Vec<(f64, f64, f64)>>();
+//     let mut periods = js_path_vals(
+//         "$.data.structures[0].dimensions.observation[0].values[*].start",
+//         binding,
+//     )
+//     .unwrap();
+//     let val = Value::String("2026-02-01T00:00:00".to_string());
+//     periods.push(&val);
 
-    let mut periods = js_path_vals(
-        "$.data.structures[0].dimensions.observation[0].values[*].start",
-        binding,
-    )
-    .unwrap();
-    let val = Value::String("2026-02-01T00:00:00".to_string());
-    periods.push(&val);
+//     debug!("periods: {periods:#?}");
 
-    debug!("periods: {periods:#?}");
+//     let mut dates = Vec::<String>::new();
+//     periods.sort_by(|a, b| {
+//         let s1 = if let Value::String(s1) = a {
+//             s1
+//         } else {
+//             &String::new()
+//         };
+//         let s2 = if let Value::String(s2) = b {
+//             s2
+//         } else {
+//             &String::new()
+//         };
+//         s1.cmp(s2)
+//     });
+//     for period in periods {
+//         let period = if let Value::String(period) = period.clone() {
+//             period
+//         } else {
+//             "".to_string()
+//         };
+//         debug!("period: {period:?}");
+//         let date = chrono::NaiveDateTime::parse_from_str(period.as_str(), "%Y-%m-%dT%H:%M:%S")
+//             .unwrap()
+//             .and_local_timezone(Local::now().timezone())
+//             .unwrap();
+//         // let date_string = date.to_string();
+//         // debug!("date: {date_string}");
+//         dates.push(format!("{}", date.format("%b %Y").to_string()));
+//     }
 
-    let mut dates = Vec::<String>::new();
-    periods.sort_by(|a, b| {
-        let s1 = if let Value::String(s1) = a {
-            s1
-        } else {
-            &String::new()
-        };
-        let s2 = if let Value::String(s2) = b {
-            s2
-        } else {
-            &String::new()
-        };
-        s1.cmp(s2)
-    });
-    for period in periods {
-        let period = if let Value::String(period) = period.clone() {
-            period
-        } else {
-            "".to_string()
-        };
-        debug!("period: {period:?}");
-        let date = chrono::NaiveDateTime::parse_from_str(period.as_str(), "%Y-%m-%dT%H:%M:%S")
-            .unwrap()
-            .and_local_timezone(Local::now().timezone())
-            .unwrap();
-        // let date_string = date.to_string();
-        // debug!("date: {date_string}");
-        dates.push(format!("{}", date.format("%b %Y").to_string()));
-    }
+//     dates.sort();
 
-    dates.sort();
-
-    data_points
-        .into_iter()
-        .zip(dates)
-        .map(|((x, y, r), date)| Data { x, y, ir: r, date })
-        .collect::<Vec<Data>>()
-}
-
+//     data_points
+//         .into_iter()
+//         .zip(dates)
+//         .map(|((x, y, r), date)| Data { x, y, ir: r, date })
+//         .collect::<Vec<Data>>()
+// }
+/// Test test
 #[component]
 pub fn LineChart() -> impl IntoView {
     debug!("LineChart");
 
     let chart_ref = NodeRef::<Div>::new();
-    // #[cfg(target_arch = "wasm32")]
-    // let data = Resource::new(
-    //     || (),
-    //     |_| async move {
-    //         load_json_file(PathBuf::from_str("graphql-server/static/CPI_simple.json").unwrap())
-    //             .await
-    //     },
-    // );
+
     let mut url = PathBuf::from_str(
         std::env::var("GRAPHQL_SERVER_URL")
             .unwrap_or("http://127.0.0.1:5432".to_string())
@@ -173,15 +167,21 @@ pub fn LineChart() -> impl IntoView {
     )
     .unwrap_or_default();
 
-    url.push("query");
-    let body = String::from("{ consumerPriceIndex(start: {year: 2024, month: 1}, end: {year: 2026, month: 3}) cashRateTarget(start: {year: 2024, month: 1}, end: {year: 2026, month: 3})}");
+    #[cfg(feature = "hydrate")]
+    let body = String::from(r#"{"query": "{ consumerPriceIndex(start: {year: 2025, month: 1}, end: {year: 2026, month: 1}) cashRateTarget(start: {year: 2025, month: 1}, end: {year: 2026, month: 1})}"}"#.to_string());
 
     #[cfg(feature = "hydrate")]
     let data = Resource::new(|| (), move |_| fetch(url.clone(), body.clone()));
 
     #[cfg(feature = "hydrate")]
+    leptos::logging::debug_log!("data: {data:#?}");
+
+    #[cfg(feature = "hydrate")]
+    // #[cfg(feature = "ssr")]
     Effect::new(move || {
-        use charming::component::Grid;
+        // leptos::logging::log!("data: {:#?}", data.get().unwrap());
+        use charming::{component::Grid, element::TextStyle};
+        use chrono::NaiveDate;
         use leptos::logging;
         use serde_json::Number;
 
@@ -190,15 +190,44 @@ pub fn LineChart() -> impl IntoView {
         let cf = chart_ref.get();
         leptos::logging::log!("cf: {:#?}", cf);
 
-        let cpi_series = js_path_vals("$.data.consumerPriceIndex.*.*", &data.get());
-        let crt_series = js_path_vals("$.data.cashRateTarget.*.*", &data.get());
-        let xs = js_path_vals("$.data.consumerPriceIndex.*", &data.get());
+        let json = if let Some(data) = data.get() {
+            data.unwrap()
+        } else {
+            return;
+        };
+
+        let cpi_series: Vec<_> =
+            js_path_vals("$.data.consumerPriceIndex", &json).unwrap_or_default();
+        let Value::Object(map) = cpi_series[0] else {
+            return;
+        };
+        let cpi_series = map
+            .into_iter()
+            .filter_map(|(_, v)| v.as_f64())
+            // .map(|f| CompositeValue::from(f))
+            .collect();
+        let crt_series: Vec<_> = js_path_vals("$.data.cashRateTarget", &json).unwrap_or_default();
+        let Value::Object(map) = crt_series[0] else {
+            return;
+        };
+        let crt_series = map
+            .into_iter()
+            .filter_map(|(_, v)| v.as_f64())
+            // .map(|f| CompositeValue::from(f))
+            .collect();
+        leptos::logging::log!("crt_series: {crt_series:#?}");
+        let xs: Vec<_> = js_path_vals("$.data.consumerPriceIndex", &json).unwrap_or_default();
+        let Value::Object(map) = xs[0] else { return };
+        let xs = map
+            .into_iter()
+            .filter_map(|(k, _v)| {
+                leptos::logging::log!("k: {k:#?}");
+                Some(k)
+            })
+            .collect();
 
         type EChart = charming::Chart;
 
-        let Some(data) = observations.get() else {
-            return;
-        };
         leptos::logging::log!("data: {data:#?}");
         let chart = EChart::new()
             .title(
@@ -208,7 +237,17 @@ pub fn LineChart() -> impl IntoView {
                     .top(CompositeValue::String(String::from("2%")))
                     .left(CompositeValue::String(String::from("50%"))),
             )
-            .grid(Grid::new())
+            // .grid(Grid::new())
+            .legend(
+                Legend::new()
+                    // .data(vec!["CPI", "CRT"])
+                    .width("auto")
+                    .height("50px")
+                    .left("50px")
+                    .bottom("50px")
+                    .text_style(TextStyle::new().color("#001B69".to_string()).font_size(12.))
+                    .align(LabelAlign::Left),
+            )
             .series(charming::series::Series::Line(
                 charming::series::Line::new().data(cpi_series),
             ))
@@ -216,13 +255,7 @@ pub fn LineChart() -> impl IntoView {
                 charming::series::Line::new().data(crt_series),
             ))
             .x_axis(Axis::new().data(xs))
-            .y_axis(Axis::new().type_(AxisType::Value))
-            .legend(
-                Legend::new()
-                    .data(vec!["CPI", "CRT"])
-                    .align(LabelAlign::Center)
-                    .show(true),
-            );
+            .y_axis(Axis::new().type_(AxisType::Value));
 
         if let Some(el) = cf {
             logging::log!("el: {el:#?}");
@@ -239,12 +272,10 @@ pub fn LineChart() -> impl IntoView {
     });
 
     view! {
-
-        <div class="w-2/3 h-fit flex-col  m-auto  ">
+        <div class="w-3/5 h-auto flex-col justify-between text-white m-auto overflow-visible">
           <div node_ref=chart_ref  class="w-full h-full [&>div]:w-full [&>div]:h-full font-serif border-2 border-solid border-black [&_*]:dark:fill-white [&>div]:dark:text-white" id="chart" ></div>
           <p class="w-full text-right">"Sources: ABS/RBA"</p>
         </div>
-
     }
 }
 
