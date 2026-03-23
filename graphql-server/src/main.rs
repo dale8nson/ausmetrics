@@ -1,7 +1,11 @@
 pub(crate) mod error;
+pub(crate) mod ffi;
 pub(crate) mod graph;
+pub(crate) mod hs_runtime;
 pub(crate) mod param;
-mod schema;
+pub(crate) mod schema;
+
+use actix_web::middleware::Logger;
 use std::{path::PathBuf, sync::Arc};
 
 use crate::schema::Query;
@@ -22,7 +26,7 @@ use dotenv::from_filename;
 use env_logger::{Builder, Env};
 use error::GQLError;
 use futures::executor::block_on;
-use log::LevelFilter;
+use log::{LevelFilter, debug};
 use reqwest::Response;
 use serde::{Deserializer, de::Visitor};
 
@@ -33,7 +37,11 @@ async fn query(
     req: GraphQLRequest,
     schema: web::Data<Schema<Query, EmptyMutation, EmptySubscription>>,
 ) -> Json<Value> {
-    web::Json(schema.execute(req.into_inner()).await.data)
+    let res = schema.execute(req.into_inner()).await;
+
+    println!("res: {res:#?}");
+
+    web::Json(res.data)
 }
 
 async fn graphiql_service() -> HttpResponse {
@@ -48,14 +56,16 @@ async fn graphiql_service() -> HttpResponse {
 
 #[actix_web::main]
 async fn main() -> Result<(), GQLError> {
-    Builder::new()
-        .format_source_path(true)
-        .format_module_path(false)
-        .format_target(false)
-        .format_timestamp(None)
-        .filter_module("graphql_server::schema", LevelFilter::Debug)
-        // .filter_level(LevelFilter::Debug)
-        .init();
+    env_logger::init_from_env(env_logger::Env::new().default_filter_or("debug"));
+    hs_runtime::init();
+    // Builder::new()
+    //     .format_source_path(true)
+    //     .format_module_path(false)
+    //     .format_target(false)
+    //     .format_timestamp(None)
+    //     // .filter_module("graphql_server::schema", LevelFilter::Debug)
+    //     // .filter_level(LevelFilter::Debug)
+    //     .init();
     from_filename(".env.local").ok();
 
     let addr = || std::env::var("GRAPHQL_ADDR").unwrap();
@@ -80,7 +90,7 @@ async fn main() -> Result<(), GQLError> {
                     .to(GraphQL::new(schema_clone)),
             )
             .service(web::resource("/").guard(guard::Get()).to(graphiql_service))
-            .service(query)
+            .wrap(Logger::new("%a: %U %r\n%s"))
     })
     .on_connect(move |_conn, _ext| {
         println!("now listening at http://{} on port {}", addr(), port);
@@ -88,5 +98,6 @@ async fn main() -> Result<(), GQLError> {
     .bind((addr(), port))?
     .run()
     .await?;
+    hs_runtime::shutdown();
     Ok(())
 }
